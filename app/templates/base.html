@@ -17,6 +17,10 @@
     <header>
         {% include "header.html" %}
     </header>
+
+    <div>
+      {% include 'flash_messages.html' %}
+    </div>
     <main>
         <div class="container">
             {% block main %}{% endblock %}

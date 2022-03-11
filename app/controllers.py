@@ -5,9 +5,6 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 
-from crypt import methods
-from itertools import product
-from math import prod
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -17,6 +14,7 @@ from app.models import Product
 from app.models import ProductTypes
 from app.models import ProductColor
 from app.forms import ProductForm
+from app import db
 
 
 
@@ -44,13 +42,35 @@ def admin_products():
 @app.route('/edit_product/<old_product_id>',methods=['GET','POST'])
 def edit_product(old_product_id):
     """Render the Edition page for a specific product."""
-    print(f"ID: {old_product_id}")
-    editing_object=  Product.query.filter_by(id=old_product_id).first()
-    print(editing_object)
+    editing_object=  Product.query.filter_by(id=old_product_id).first() # fetches the product to edit
 
-    form = ProductForm(color_options=editing_object.color.value, type_options =editing_object.type.value)
-    form.type_options.choices = [(option.value, option.name) for option in  ProductTypes]
-    form.color_options.choices = [(option.value, option.name) for option in  ProductColor]
+    form = ProductForm(color_options=editing_object.color.value, type_options =editing_object.type.value) # pre-selects the type and color in form
+    form.type_options.choices = [( option.value,option.name) for option in  ProductTypes]
+    form.color_options.choices = [(option.value,option.name) for option in  ProductColor]
+
+    # IF the request is to submit the form
+    if request.method == "POST" :
+        if form.validate():
+            price = form.price.data
+            descrip = form.Description.data
+            title = form.title.data
+            color = form.color_options.data
+            type = form.type_options.data
+            
+            #Debugging output
+            # print(f"received from Form: {price}, {title}, {descrip}, { ProductColor(str(color))},{ProductTypes(str(type))}")
+
+            editing_object.price = price
+            editing_object.Description = descrip
+            editing_object.title = title
+            editing_object.type = ProductTypes(str(type))
+            editing_object.color = ProductColor(str(color))
+            db.session.commit() # save data to DB
+
+            flash("Product Updated!",'success')
+            return redirect(url_for('admin_products'))           
+            
+    # If the request is tp get the product to edit
     return render_template('edit_product.html',prod = editing_object, form = form)
 
     

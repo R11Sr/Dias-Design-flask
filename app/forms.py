@@ -2,6 +2,7 @@ from itertools import product
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField,TextAreaField,SelectField
 from wtforms.validators import InputRequired, DataRequired
+from app.models import ProductColor
 
 
 class LoginForm(FlaskForm):
@@ -11,10 +12,8 @@ class LoginForm(FlaskForm):
 
 
 class ProductForm(FlaskForm):
-    # types = ProductTypes()
     title = StringField('title', validators=[InputRequired()])
     Description = TextAreaField('Description',validators=[DataRequired()])
-    color_options= SelectField('color')
-    type_options = SelectField('type')
     price= StringField('price', validators=[InputRequired()])
-    
+    color_options= SelectField('color',validators=[DataRequired()])
+    type_options = SelectField('type',validators=[DataRequired()])   
