@@ -78,6 +78,7 @@ class Product(db.Model):
         self.type = type
         self.price = price
         self.color = color
+        # self.color = ProductColor(str(color))
     
     # These methods to splice off the unwanted part of the Enum selected
     #they are called on the object in the respective views

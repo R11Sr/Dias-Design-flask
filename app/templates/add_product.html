@@ -4,7 +4,7 @@
 
 
 
-<form action="" method="POST" class="pb-3">
+<form action="" method="POST">
     {{form.csrf_token}}
 
     <div class="fom-group   pb-3">
@@ -12,22 +12,21 @@
             {{form.title.label}} <span class="text-danger">(Required)</span>
         </label>
         <div class="col-sm-10">
-            {{form.title(class_='form-control', value = prod.title)}}
+            {{form.title(class_='form-control')}}
 
         </div>
     </div>
 
-    <div class="fom-group pb-3">
+    <div class="fom-group   pb-3">
         <label for="colFormLabel" class="col-sm-2 col-form-label">
             {{form.Description.label}} <span class="text-danger">(Required)</span>
         </label>
         <div class="col-sm-10">
-            {% set f = form.Description.process_data(prod.Description) %}
             {{form.Description(class_='form-control')}}
 
         </div>
     </div>
-
+    
     <div class="fom-group   pb-3">
         <label for="colFormLabel" class="col-sm-2 col-form-label">
             {{form.type_options.label}} <span class="text-danger">(Required)</span>
@@ -45,7 +44,7 @@
             {{form.price.label}} <span class="text-danger">(Required)</span>
         </label>
         <div class="col-sm-10">
-            {{form.price(class_='form-control',value = prod.price)}}
+            {{form.price(class_='form-control')}}
 
         </div>
     </div>
@@ -64,30 +63,6 @@
 
 
 
-    <button type="submit info" class="btn btn-info">Update</button>
+    <button type="submit info" class="btn btn-info">Add Product</button>
 </form>
-<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
-
-
-<!-- Modal -->
-
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Deletion of Product</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure you want to delete "{{prod.title}}" ?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <!-- <button type="button" class="btn btn-danger">Delete</button> -->
-          <a href="{{url_for('confirm_deletion',invalid_product_id = prod.id)}}" class="btn btn-danger">Delete</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
 {% endblock %}

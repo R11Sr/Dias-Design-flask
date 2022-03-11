@@ -5,6 +5,7 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 
+from crypt import methods
 from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -36,8 +37,38 @@ def about():
 @app.route('/manage_products')
 def admin_products():
     """Render the website's Admin Section."""
-    all_products = Product.query.all()
+    # all_products = Product.query.all()
+    all_products = db.session.query(Product).order_by(Product.id)
     return render_template('mange_products.html', products = all_products)
+
+@app.route('/add_product',methods=['GET','POST'])
+def add_product():
+    """Render the  page to add a product."""
+    form = ProductForm()
+    form.type_options.choices = [( option.value,option.name) for option in  ProductTypes]
+    form.color_options.choices = [(option.value,option.name) for option in  ProductColor]
+
+    if request.method == 'POST':
+        if form.validate():
+            price = form.price.data
+            Description = form.Description.data
+            title = form.title.data
+            color = form.color_options.data
+            type = form.type_options.data
+
+            # Debugging output
+            # print(f"received from addprod Form: {price}, {title}, {Description}, { ProductColor(str(color))},{ProductTypes(str(type))}")
+
+            new_product  = Product(title,Description,ProductTypes(str(type)),price,ProductColor(str(color)))
+            db.session.add(new_product)
+            db.session.commit()
+            
+            flash(f"{title} Added to Catlog",'success')
+            return redirect(url_for('admin_products'))  
+
+    return render_template('add_product.html', form = form)
+
+
 
 @app.route('/edit_product/<old_product_id>',methods=['GET','POST'])
 def edit_product(old_product_id):
@@ -73,8 +104,19 @@ def edit_product(old_product_id):
     # If the request is tp get the product to edit
     return render_template('edit_product.html',prod = editing_object, form = form)
 
-    
-    
+
+
+@app.route('/delete_product_confirm/<invalid_product_id>')
+def confirm_deletion(invalid_product_id):
+    """Removes Selected Product from the the Database after confirmation"""
+
+    delete_product=  Product.query.get(invalid_product_id) # fetches the product to delete
+    db.session.delete(delete_product)
+    db.session.commit()
+
+    flash(f"Product {delete_product.title} Removed from Catalog",'warning')
+    return redirect(url_for('admin_products'))  
+
 
 
 @app.route("/login", methods=["GET", "POST"])
