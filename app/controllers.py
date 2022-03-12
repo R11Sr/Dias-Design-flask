@@ -7,7 +7,7 @@ This file creates your application.
 
 from crypt import methods
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash,session
 from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import LoginForm
 from app.models import UserProfile
@@ -15,7 +15,9 @@ from app.models import Product
 from app.models import ProductTypes
 from app.models import ProductColor
 from app.forms import ProductForm
+from app.forms import AccountForm
 from app import db
+from werkzeug.security import check_password_hash
 
 
 
@@ -35,15 +37,25 @@ def about():
     return render_template('about.html')
 
 @app.route('/manage_products')
+@login_required
 def admin_products():
     """Render the website's Admin Section."""
+    if not session.get('admin'):
+        flash("You are not Authorised to access that functionality",'warning')
+        return redirect(url_for('home'))
+        
     # all_products = Product.query.all()
     all_products = db.session.query(Product).order_by(Product.id)
     return render_template('mange_products.html', products = all_products)
 
 @app.route('/add_product',methods=['GET','POST'])
+@login_required
 def add_product():
     """Render the  page to add a product."""
+    if not session.get('admin'):
+        flash("You are not Authorised to access that functionality",'warning')
+        return redirect(url_for('home'))
+
     form = ProductForm()
     form.type_options.choices = [( option.value,option.name) for option in  ProductTypes]
     form.color_options.choices = [(option.value,option.name) for option in  ProductColor]
@@ -71,8 +83,13 @@ def add_product():
 
 
 @app.route('/edit_product/<old_product_id>',methods=['GET','POST'])
+@login_required
 def edit_product(old_product_id):
     """Render the Edition page for a specific product."""
+    if not session.get('admin'):
+        flash("You are not Authorised to access that functionality",'warning')
+        return redirect(url_for('home'))
+
     editing_object=  Product.query.filter_by(id=old_product_id).first() # fetches the product to edit
 
     form = ProductForm(color_options=editing_object.color.value, type_options =editing_object.type.value) # pre-selects the type and color in form
@@ -107,8 +124,13 @@ def edit_product(old_product_id):
 
 
 @app.route('/delete_product_confirm/<invalid_product_id>')
+@login_required
 def confirm_deletion(invalid_product_id):
     """Removes Selected Product from the the Database after confirmation"""
+    if not session.get('admin'):
+        flash("You are not Authorised to access that functionality",'warning')
+        return redirect(url_for('home'))
+
 
     delete_product=  Product.query.get(invalid_product_id) # fetches the product to delete
     db.session.delete(delete_product)
@@ -118,29 +140,72 @@ def confirm_deletion(invalid_product_id):
     return redirect(url_for('admin_products'))  
 
 
+@app.route('/create_account',methods=['POST',"GET"])
+def create_account():
+    """Visitor uses this to create an account for the application"""
+
+    # ensure an authenticated user is not able to create an account
+    if current_user is not None and current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    form = AccountForm()
+
+    if request.method == 'POST':
+        if form.validate():
+            firstName = form.firstName.data.capitalize()
+            lastName = form.lastName.data.capitalize()
+            email = form.email.data
+            password = form.password.data
+            retypePassword = form.retypePassword.data
+
+            print(f"user data: fname:{firstName}, lname{lastName}, email:{email}")
+
+            if password == retypePassword:
+                user = UserProfile(firstName,lastName,email,password)
+                db.session.add(user)
+                db.session.commit()
+
+                flash('Account Sucessfully Created!','success')
+                next = request.args.get('next')
+                return redirect(next or url_for("home"))
+            flash("Passwords do not match!",'danger')
+        flash_errors(form)
+    
+    return render_template("create_account.html", form=form)
+
+
+
+
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user is not None and current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = LoginForm()
     if request.method == "POST":
-        # change this to actually validate the entire form submission
-        # and not just one field
-        if form.username.data:
-            # Get the username and password values from the form.
-
-            # using your model, query database for a user based on the username
-            # and password submitted. Remember you need to compare the password hash.
-            # You will need to import the appropriate function to do so.
-            # Then store the result of that query to a `user` variable so it can be
-            # passed to the login_user() method below.
-
-            # get user id, load into session
-            login_user(user)
-
-            # remember to flash a message to the user
-            return redirect(url_for("home"))  # they should be redirected to a secure-page route instead
+        if form.validate():
+            email = form.email.data
+            pwrd = form.password.data
+            
+            user = UserProfile.query.filter_by(email = email).first()
+            if user is not None and check_password_hash(user.password,pwrd):
+                if email == 'admin@diasdesign.com':
+                    session['admin'] = True
+                login_user(user)
+                flash("Logged In Sucessfully",'success')
+                next = request.args.get('next')
+                return redirect(next or url_for("home")) 
+            else:
+                flash("Incorrect credentials entered",'danger') 
+    flash_errors(form)
     return render_template("login.html", form=form)
 
+@app.route('/logout')
+def logout():
+    logout_user()
+    flash('You were logged out', 'success')
+    return redirect(url_for('home'))
 
 # user_loader callback. This callback is used to reload the user object from
 # the user ID stored in the session

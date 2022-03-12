@@ -6,7 +6,7 @@ from app.models import ProductColor
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired()])
+    email = StringField('email', validators=[InputRequired()])
     password = PasswordField('Password', validators=[InputRequired()])
 
 
@@ -16,4 +16,12 @@ class ProductForm(FlaskForm):
     Description = TextAreaField('Description',validators=[DataRequired()])
     price= StringField('price', validators=[InputRequired()])
     color_options= SelectField('color',validators=[DataRequired()])
-    type_options = SelectField('type',validators=[DataRequired()])   
+    type_options = SelectField('type',validators=[DataRequired()])  
+
+
+class AccountForm(FlaskForm):
+    firstName = StringField('First Name', validators=[InputRequired()])
+    lastName = StringField('Last Name', validators=[InputRequired()])
+    email = StringField('Email', validators=[InputRequired()])
+    password = StringField('Password', validators=[InputRequired()])
+    retypePassword = StringField('Re-enter Password', validators=[InputRequired()])

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<div class="banner">
+    <h2>Create an Account</h2>
+</div>
+
+<div class="container">
+    <form action="" method="post">
+        {{form.csrf_token}}
+        <div class="fom-group pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.firstName.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.firstName(class_='form-control')}}
+            </div>
+        </div>
+
+        <div class="fom-group pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.lastName.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.lastName(class_='form-control')}}
+
+            </div>
+        </div>
+
+
+        <div class="fom-group   pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.email.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.email(class_='form-control')}}
+
+            </div>
+        </div>
+
+        <div class="fom-group   pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.password.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.password(class_='form-control',type_='password')}}
+
+            </div>
+        </div>
+
+
+        <div class="fom-group   pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.retypePassword.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.retypePassword(class_='form-control',type_='password')}}
+
+            </div>
+        </div>
+
+        <button type="submit info" class="btn btn-primary">Create Account</button>
+
+    </form>
+</div>
+
+{% endblock %}
