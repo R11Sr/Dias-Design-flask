@@ -66,7 +66,7 @@
 
     <button type="submit info" class="btn btn-info">Update</button>
 </form>
-<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
+<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
 
 
 <!-- Modal -->
@@ -82,9 +82,9 @@
           <p>Are you sure you want to delete "{{prod.title}}" ?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
           <!-- <button type="button" class="btn btn-danger">Delete</button> -->
-          <a href="{{url_for('confirm_deletion',invalid_product_id = prod.id)}}" class="btn btn-danger">Delete</a>
+          <a href="{{url_for('admin.confirm_deletion',invalid_product_id = prod.id)}}" class="btn btn-danger">Delete</a>
         </div>
       </div>
     </div>

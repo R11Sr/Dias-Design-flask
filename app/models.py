@@ -70,6 +70,7 @@ class Product(db.Model):
     type = db.Column(db.Enum(ProductTypes),default = ProductTypes.Tops, nullable  = False)
     price = db.Column(db.Numeric(8,2),nullable  = False) # will change this to currency
     color = db.Column(db.Enum(ProductColor))
+    # image = db.Column(db.String(256),nullable = False)
     
     def __init__(self,title,Description,type,price,color):
         super().__init__()

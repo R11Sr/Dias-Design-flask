@@ -1,45 +1,28 @@
-"""
-Flask Documentation:     http://flask.pocoo.org/docs/
-Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
-Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
-This file creates your application.
-"""
+from flask import Blueprint
 
-from crypt import methods
-from app import app, db, login_manager
+from app import db, login_manager
 from flask import render_template, request, redirect, url_for, flash,session
-from flask_login import login_user, logout_user, current_user, login_required
-from app.forms import LoginForm
-from app.models import UserProfile
+from flask_login import login_required
+from flask_login import login_user, logout_user, current_user
 from app.models import Product
 from app.models import ProductTypes
 from app.models import ProductColor
 from app.forms import ProductForm
-from app.forms import AccountForm
-from app import db
+from app.models import UserProfile
+from app.forms import LoginForm
 from werkzeug.security import check_password_hash
 
 
 
-###
-# Routing for your application.
-###
-
-@app.route('/')
-def home():
-    """Render website's home page."""
-    return render_template('home.html')
+admin = Blueprint('admin',__name__)
 
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html')
 
-@app.route('/manage_products')
+@admin.route('/admin/manage_products')
 @login_required
 def admin_products():
     """Render the website's Admin Section."""
+
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
         return redirect(url_for('home'))
@@ -48,10 +31,11 @@ def admin_products():
     all_products = db.session.query(Product).order_by(Product.id)
     return render_template('mange_products.html', products = all_products)
 
-@app.route('/add_product',methods=['GET','POST'])
+@admin.route('/admin/add_product',methods=['GET','POST'])
 @login_required
 def add_product():
     """Render the  page to add a product."""
+
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
         return redirect(url_for('home'))
@@ -82,10 +66,11 @@ def add_product():
 
 
 
-@app.route('/edit_product/<old_product_id>',methods=['GET','POST'])
+@admin.route('/admin/edit_product/<old_product_id>',methods=['GET','POST'])
 @login_required
 def edit_product(old_product_id):
     """Render the Edition page for a specific product."""
+
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
         return redirect(url_for('home'))
@@ -123,10 +108,11 @@ def edit_product(old_product_id):
 
 
 
-@app.route('/delete_product_confirm/<invalid_product_id>')
+@admin.route('/admin/delete_product_confirm/<invalid_product_id>')
 @login_required
 def confirm_deletion(invalid_product_id):
     """Removes Selected Product from the the Database after confirmation"""
+
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
         return redirect(url_for('home'))
@@ -140,45 +126,21 @@ def confirm_deletion(invalid_product_id):
     return redirect(url_for('admin_products'))  
 
 
-@app.route('/create_account',methods=['POST',"GET"])
-def create_account():
-    """Visitor uses this to create an account for the application"""
+@admin.errorhandler(404)
+def page_not_found(error):
+    """Custom 404 page."""
+    return render_template('404.html'), 404
 
-    # ensure an authenticated user is not able to create an account
-    if current_user is not None and current_user.is_authenticated:
-        return redirect(url_for('home'))
-    
-    form = AccountForm()
 
-    if request.method == 'POST':
-        if form.validate():
-            firstName = form.firstName.data.capitalize()
-            lastName = form.lastName.data.capitalize()
-            email = form.email.data
-            password = form.password.data
-            retypePassword = form.retypePassword.data
-
-            print(f"user data: fname:{firstName}, lname{lastName}, email:{email}")
-
-            if password == retypePassword:
-                user = UserProfile(firstName,lastName,email,password)
-                db.session.add(user)
-                db.session.commit()
-
-                flash('Account Sucessfully Created!','success')
-                next = request.args.get('next')
-                return redirect(next or url_for("home"))
-            flash("Passwords do not match!",'danger')
-        flash_errors(form)
-    
-    return render_template("create_account.html", form=form)
+@admin.errorhandler(500)
+def internal_server_error(error):
+    """Custom 500 page."""
+    return render_template('500.html'), 500
 
 
 
 
-
-
-@app.route("/login", methods=["GET", "POST"])
+@admin.route("/admin/login", methods=["GET", "POST"])
 def login():
     if current_user is not None and current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -201,14 +163,13 @@ def login():
     flash_errors(form)
     return render_template("login.html", form=form)
 
-@app.route('/logout')
+@admin.route('/admin/logout')
 def logout():
     logout_user()
+    session.clear()
     flash('You were logged out', 'success')
     return redirect(url_for('home'))
 
-# user_loader callback. This callback is used to reload the user object from
-# the user ID stored in the session
 @login_manager.user_loader
 def load_user(id):
     return UserProfile.query.get(int(id))
@@ -227,14 +188,8 @@ def flash_errors(form):
             ), 'danger')
 
 
-@app.route('/<file_name>.txt')
-def send_text_file(file_name):
-    """Send your static text file."""
-    file_dot_text = file_name + '.txt'
-    return app.send_static_file(file_dot_text)
 
-
-@app.after_request
+@admin.after_request
 def add_header(response):
     """
     Add headers to both force latest IE rendering engine or Chrome Frame,
@@ -245,11 +200,3 @@ def add_header(response):
     return response
 
 
-@app.errorhandler(404)
-def page_not_found(error):
-    """Custom 404 page."""
-    return render_template('404.html'), 404
-
-
-if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port="8080")

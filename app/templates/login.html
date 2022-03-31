@@ -4,7 +4,7 @@
   <div class="login-form center-block">
     <h2>Please Log in</h2>
     {% include 'flash_messages.html' %}
-    <form action="{{ url_for('login') }}" class="pb-3" method="post">
+    <form action="{{ url_for('public.login') }}" class="pb-3" method="post">
       {{ form.csrf_token }}
       <div class="form-group pb-3">
         {{ form.email.label }}
@@ -16,6 +16,6 @@
       </div>
       <button type="submit" name="submit" class="btn btn-primary btn-block">Log in</button>
     </form>
-    <a href="{{url_for('create_account')}}" class="btn btn-primary"> Create account</a>
+    <a href="{{url_for('public.create_account')}}" class="btn btn-primary"> Create account</a>
   </div>
 {% endblock %}
