@@ -11,7 +11,7 @@ from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash,session
 from flask_login import login_user, logout_user, current_user
 from app.forms import LoginForm
-from app.models import UserProfile
+from app.models import Product, UserProfile
 
 from app.forms import AccountForm
 from app import db
@@ -39,6 +39,12 @@ def about():
     return render_template('about.html')
 
 
+@public.route('/products')
+def browse_products():
+    """Allows a visitor to browse product catalog"""
+    listOfProducts = Product.query.all()
+    return render_template('productsCatalog.html',productList = listOfProducts)
+
 @public.route('/create_account',methods=['POST',"GET"])
 def create_account():
     """Visitor uses this to create an account for the application"""
@@ -51,8 +57,8 @@ def create_account():
 
     if request.method == 'POST':
         if form.validate():
-            firstName = form.firstName.data.capitalize()
-            lastName = form.lastName.data.capitalize()
+            firstName = form.firstName.data.capitalize().rstrip()
+            lastName = form.lastName.data.capitalize().rstrip()
             email = form.email.data
             password = form.password.data
             retypePassword = form.retypePassword.data
@@ -73,12 +79,10 @@ def create_account():
     return render_template("create_account.html", form=form)
 
 
-
-
-
-
 @public.route("/login", methods=["GET", "POST"])
 def login():
+    """Visitor uses this to Authorise and Authenticate themselves"""
+
     if current_user is not None and current_user.is_authenticated:
         return redirect(url_for('home'))
     form = LoginForm()
@@ -102,6 +106,8 @@ def login():
 
 @public.route('/logout')
 def logout():
+    """Logout of the application"""
+
     logout_user()
     session.clear()
     flash('You were logged out', 'success')

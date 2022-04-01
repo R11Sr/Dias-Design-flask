@@ -2,71 +2,95 @@
 
 {% block main %}
 
+<div class="container col-md-8">
+    <div class="wrapper">
+        <div class="row">
+            <div class="col" id="image-column">
+                <img class="h-100 d-inline-block" 
 
+                {#Check if there is and image associated with that product#}
+                {%if prod.image%}
+                src="{{url_for('admin.get_image',imageName = prod.image)}}" 
+                {%else%}
+                src="#"
+                {%endif%}
+                alt="No Image found for: '{{prod.title}}'" width="400px" 
+                id="full-property-image"
+                >   
 
-<form action="" method="POST" class="pb-3">
-    {{form.csrf_token}}
-
-    <div class="fom-group   pb-3">
-        <label for="colFormLabel" class="col-sm-2 col-form-label">
-            {{form.title.label}} <span class="text-danger">(Required)</span>
-        </label>
-        <div class="col-sm-10">
-            {{form.title(class_='form-control', value = prod.title)}}
-
+            </div>
+            <div class="col">
+                <div class="container p-2">
+                    <form action="" method="POST" class="pb-3">
+                        {{form.csrf_token}}
+                    
+                        <div class="fom-group   pb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                                {{form.title.label}} <span class="text-danger">(Required)</span>
+                            </label>
+                            <div class="col-sm-10">
+                                {{form.title(class_='form-control', value = prod.title)}}
+                    
+                            </div>
+                        </div>
+                    
+                        <div class="fom-group pb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                                {{form.Description.label}} <span class="text-danger">(Required)</span>
+                            </label>
+                            <div class="col-sm-10">
+                                {% set f = form.Description.process_data(prod.Description) %}
+                                {{form.Description(class_='form-control')}}
+                    
+                            </div>
+                        </div>
+                    
+                        <div class="fom-group   pb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                                {{form.type_options.label}} <span class="text-danger">(Required)</span>
+                            </label>
+                            <div class="col-sm-10">
+                                {{form.type_options(class_='form-control')}}
+                    
+                            </div>
+                        </div>
+                    
+                    
+                    
+                        <div class="fom-group   pb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                                {{form.price.label}} <span class="text-danger">(Required)</span>
+                            </label>
+                            <div class="col-sm-10">
+                                {{form.price(class_='form-control',value = prod.price)}}
+                    
+                            </div>
+                        </div>
+                    
+                    
+                    
+                        <div class="fom-group   pb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                                {{form.color_options.label}} <span class="text-danger">(Required)</span>
+                            </label>
+                            <div class="col-sm-10">
+                                {{form.color_options(class_='form-control')}}
+                    
+                            </div>
+                        </div>
+                    
+                    
+                    
+                        <button type="submit info" class="btn btn-info">Update</button>
+                    </form>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
+                    
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="fom-group pb-3">
-        <label for="colFormLabel" class="col-sm-2 col-form-label">
-            {{form.Description.label}} <span class="text-danger">(Required)</span>
-        </label>
-        <div class="col-sm-10">
-            {% set f = form.Description.process_data(prod.Description) %}
-            {{form.Description(class_='form-control')}}
-
-        </div>
-    </div>
-
-    <div class="fom-group   pb-3">
-        <label for="colFormLabel" class="col-sm-2 col-form-label">
-            {{form.type_options.label}} <span class="text-danger">(Required)</span>
-        </label>
-        <div class="col-sm-10">
-            {{form.type_options(class_='form-control')}}
-
-        </div>
-    </div>
-
-
-
-    <div class="fom-group   pb-3">
-        <label for="colFormLabel" class="col-sm-2 col-form-label">
-            {{form.price.label}} <span class="text-danger">(Required)</span>
-        </label>
-        <div class="col-sm-10">
-            {{form.price(class_='form-control',value = prod.price)}}
-
-        </div>
-    </div>
-
-
-
-    <div class="fom-group   pb-3">
-        <label for="colFormLabel" class="col-sm-2 col-form-label">
-            {{form.color_options.label}} <span class="text-danger">(Required)</span>
-        </label>
-        <div class="col-sm-10">
-            {{form.color_options(class_='form-control')}}
-
-        </div>
-    </div>
-
-
-
-    <button type="submit info" class="btn btn-info">Update</button>
-</form>
-<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
 
 
 <!-- Modal -->

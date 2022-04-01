@@ -1,9 +1,11 @@
 from flask import Blueprint
+import os
 
 from app import db, login_manager
 from flask import render_template, request, redirect, url_for, flash,session
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
+from app.config import Config
 from app.models import Product
 from app.models import ProductTypes
 from app.models import ProductColor
@@ -11,9 +13,12 @@ from app.forms import ProductForm
 from app.models import UserProfile
 from app.forms import LoginForm
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
+import  boto3
+import botocore
+import locale
 
-
-
+locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' ) 
 admin = Blueprint('admin',__name__)
 
 
@@ -25,7 +30,7 @@ def admin_products():
 
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
-        return redirect(url_for('home'))
+        return redirect(url_for('public.home'))
         
     # all_products = Product.query.all()
     all_products = db.session.query(Product).order_by(Product.id)
@@ -38,7 +43,7 @@ def add_product():
 
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
-        return redirect(url_for('home'))
+        return redirect(url_for('public.home'))
 
     form = ProductForm()
     form.type_options.choices = [( option.value,option.name) for option in  ProductTypes]
@@ -47,23 +52,72 @@ def add_product():
     if request.method == 'POST':
         if form.validate():
             price = form.price.data
-            Description = form.Description.data
-            title = form.title.data
+            Description = form.Description.data.rstrip()
+            title = form.title.data.rstrip()
             color = form.color_options.data
             type = form.type_options.data
+            image = form.image.data
+         
+            # print(f"received from addprod Form: {price}, {title}, {Description}, { ProductColor(str(color))},{ProductTypes(str(type))},{image}")
 
-            # Debugging output
-            # print(f"received from addprod Form: {price}, {title}, {Description}, { ProductColor(str(color))},{ProductTypes(str(type))}")
+            if image.filename == '':
+                flash("No image has been selected",'warning')
+                return redirect(request.url)
+            
+            imageName = secure_filename(image.filename.rstrip())
 
-            new_product  = Product(title,Description,ProductTypes(str(type)),price,ProductColor(str(color)))
+            image.save(str(os.path.join(Config.UPLOAD_FOLDER,imageName)))
+
+            #check  to see if the image is already on the sever
+            try:
+                BUCKET_NAME = Config.BUCKET_NAME
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+                file = s3.get_object(Bucket = BUCKET_NAME,Key = imageName)
+            
+            #Save the image to the s3 bucket since  not there
+            except botocore.exceptions.ClientError:
+                BUCKET_NAME = Config.BUCKET_NAME
+                s3 = boto3.resource('s3')
+                imageData = open(str(os.path.join(Config.UPLOAD_FOLDER,imageName)),'rb')
+                s3.Bucket(BUCKET_NAME).put_object(Key=imageName,Body=imageData)
+            
+            #Saves product to DB
+            new_product  = Product(title,Description,ProductTypes(str(type)),price,ProductColor(str(color)),imageName)
             db.session.add(new_product)
             db.session.commit()
             
             flash(f"{title} Added to Catlog",'success')
-            return redirect(url_for('admin_products'))  
+            return redirect(url_for('admin.admin_products')) 
+        else:
+            print(form.errors)
+            flash(form.errors)
+            return redirect(request.url)
 
     return render_template('add_product.html', form = form)
 
+
+
+@admin.route('/uploads/<imageName>')
+def get_image(imageName):
+    """Fetch Image from image server."""
+    try:
+        BUCKET_NAME = Config.BUCKET_NAME
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+        file = s3.get_object(Bucket = BUCKET_NAME,Key = imageName)
+
+        return file['Body'].read()
+
+    except botocore.exceptions.ClientError as error:
+        flash(f'image {imageName} was not found')
+        print(f"file: {imageName} not found!")
+    return "File Not Found"
+    
 
 
 @admin.route('/admin/edit_product/<old_product_id>',methods=['GET','POST'])
@@ -73,7 +127,7 @@ def edit_product(old_product_id):
 
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
-        return redirect(url_for('home'))
+        return redirect(url_for('public.home'))
 
     editing_object=  Product.query.filter_by(id=old_product_id).first() # fetches the product to edit
 
@@ -90,8 +144,6 @@ def edit_product(old_product_id):
             color = form.color_options.data
             type = form.type_options.data
             
-            #Debugging output
-            # print(f"received from Form: {price}, {title}, {descrip}, { ProductColor(str(color))},{ProductTypes(str(type))}")
 
             editing_object.price = price
             editing_object.Description = descrip
@@ -101,7 +153,7 @@ def edit_product(old_product_id):
             db.session.commit() # save data to DB
 
             flash("Product Updated!",'success')
-            return redirect(url_for('admin_products'))           
+            return redirect(url_for('admin.admin_products'))           
             
     # If the request is tp get the product to edit
     return render_template('edit_product.html',prod = editing_object, form = form)
@@ -115,7 +167,7 @@ def confirm_deletion(invalid_product_id):
 
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
-        return redirect(url_for('home'))
+        return redirect(url_for('public.home'))
 
 
     delete_product=  Product.query.get(invalid_product_id) # fetches the product to delete
@@ -123,7 +175,7 @@ def confirm_deletion(invalid_product_id):
     db.session.commit()
 
     flash(f"Product {delete_product.title} Removed from Catalog",'warning')
-    return redirect(url_for('admin_products'))  
+    return redirect(url_for('admin.admin_products'))  
 
 
 @admin.errorhandler(404)
@@ -140,35 +192,35 @@ def internal_server_error(error):
 
 
 
-@admin.route("/admin/login", methods=["GET", "POST"])
-def login():
-    if current_user is not None and current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = LoginForm()
-    if request.method == "POST":
-        if form.validate():
-            email = form.email.data
-            pwrd = form.password.data
+# @admin.route("/admin/login", methods=["GET", "POST"])
+# def login():
+#     if current_user is not None and current_user.is_authenticated:
+#         return redirect(url_for('public.home'))
+#     form = LoginForm()
+#     if request.method == "POST":
+#         if form.validate():
+#             email = form.email.data
+#             pwrd = form.password.data
             
-            user = UserProfile.query.filter_by(email = email).first()
-            if user is not None and check_password_hash(user.password,pwrd):
-                if email == 'admin@diasdesign.com':
-                    session['admin'] = True
-                login_user(user)
-                flash("Logged In Sucessfully",'success')
-                next = request.args.get('next')
-                return redirect(next or url_for("home")) 
-            else:
-                flash("Incorrect credentials entered",'danger') 
-    flash_errors(form)
-    return render_template("login.html", form=form)
+#             user = UserProfile.query.filter_by(email = email).first()
+#             if user is not None and check_password_hash(user.password,pwrd):
+#                 if email == 'admin@diasdesign.com':
+#                     session['admin'] = True
+#                 login_user(user)
+#                 flash("Logged In Sucessfully",'success')
+#                 next = request.args.get('next')
+#                 return redirect(next or url_for("public.home")) 
+#             else:
+#                 flash("Incorrect credentials entered",'danger') 
+#     flash_errors(form)
+#     return render_template("login.html", form=form)
 
-@admin.route('/admin/logout')
-def logout():
-    logout_user()
-    session.clear()
-    flash('You were logged out', 'success')
-    return redirect(url_for('home'))
+# @admin.route('/admin/logout')
+# def logout():
+#     logout_user()
+#     session.clear()
+#     flash('You were logged out', 'success')
+#     return redirect(url_for('public.home'))
 
 @login_manager.user_loader
 def load_user(id):

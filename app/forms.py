@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField,TextAreaField,SelectField
 from wtforms.validators import InputRequired, DataRequired
 from app.models import ProductColor
+from flask_wtf.file import FileField, FileAllowed,FileRequired
 
 
 class LoginForm(FlaskForm):
@@ -17,6 +18,9 @@ class ProductForm(FlaskForm):
     price= StringField('price', validators=[InputRequired()])
     color_options= SelectField('color',validators=[DataRequired()])
     type_options = SelectField('type',validators=[DataRequired()])  
+    image = FileField('image',validators=[FileRequired(),FileAllowed(['jpg','png','jpeg'],'Select image files only.')])
+
+    
 
 
 class AccountForm(FlaskForm):
