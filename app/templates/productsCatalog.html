@@ -5,9 +5,41 @@
 </div>
 
 <div class="container">
-    {%for product in  productList%}
+    <div class="row">
 
-    {%endfor%}
+        {%for product in  productList%}
+            <div class="col-3 pb-4">
+                <div class="card">
+                    <img 
+                        {#Check if there is and image associated with that product#}
+                        {%if product.image%}
+                        src="{{url_for('admin.get_image',imageName = product.image)}}" 
+                        {%else%}
+                        src="#"
+                        {%endif%}
+                        alt="'{{product.title}}'"                     
+                    >
+                    <div class="card-body">
+                        <h5 class="card-title">{{product.title}}</h5>
+                        <p class="pb-1">
+                            <span class="text-muted">{{product.Description}}</span>
+                        </p>
+                        <p class="card-text pb-2"><span class="elongated-div"><span
+                            class="text-white price">{{locale.currency(product.price,grouping =
+                            True)}}</span></span></p>
+
+                        <div class="pb-3">
+                            {{product.type}}
+                        </div>
+
+                        <div class="pb-3">
+                            {{product.color}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {%endfor%}
+    </div>
 
 </div>
 

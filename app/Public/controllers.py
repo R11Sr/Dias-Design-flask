@@ -17,6 +17,9 @@ from app.forms import AccountForm
 from app import db
 from werkzeug.security import check_password_hash
 
+import locale
+locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' )
+
 
 
 public = Blueprint('public',__name__)
@@ -43,7 +46,7 @@ def about():
 def browse_products():
     """Allows a visitor to browse product catalog"""
     listOfProducts = Product.query.all()
-    return render_template('productsCatalog.html',productList = listOfProducts)
+    return render_template('productsCatalog.html',productList = listOfProducts,locale = locale)
 
 @public.route('/create_account',methods=['POST',"GET"])
 def create_account():
