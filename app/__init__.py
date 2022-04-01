@@ -20,7 +20,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'controllers.login'
 login_manager.blueprint_login_views = {
-    'admin' : '/admin/login',
     'public' : '/login'
 }
 
