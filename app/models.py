@@ -1,4 +1,5 @@
 from datetime import date
+from itertools import product
 from . import db
 import enum
 from werkzeug.security import generate_password_hash
@@ -60,7 +61,6 @@ class ProductColor(enum.Enum):
 
 
 
-
 class Product(db.Model):
     __tablename__ = 'products'
     
@@ -80,7 +80,6 @@ class Product(db.Model):
         self.price = price
         self.color = color
         self.image = image
-        # self.color = ProductColor(str(color))
     
     # These methods to splice off the unwanted part of the Enum selected
     #they are called on the object in the respective views
@@ -94,5 +93,22 @@ class Product(db.Model):
 
     def __repr__(self):
         return f"<{self.id},{self.title},{self.type},{self.price}>"
+
+class ShoppingCart(db.Model):
+    __tablename__='shopping-cart'
+
+    id= db.Column(db.Integer, primary_key=True)
+    customer_id=db.Column(db.Integer,nullable=False)
+    product_id=db.Column(db.Integer,nullable= False)
+    quantity = db.Column(db.Numeric,nullable =False)
+
+    def __init__(self,customer_id,product_id,quantity):
+        super().__init__()
+        self.customer_id = customer_id
+        self.product_id = product_id
+        self.quantity = quantity
+
+    def __repr__(self):
+        return f"<id: {self.id}, cust_id: {self.customer_id}>"
 
 

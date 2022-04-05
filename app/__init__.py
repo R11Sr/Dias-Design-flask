@@ -25,9 +25,10 @@ login_manager.blueprint_login_views = {
 
 from .Admin.admin_controller import admin
 from .Public.controllers import public
+from .Customer.customer_contoller import customer
 
 app.register_blueprint(admin)
 app.register_blueprint(public)
+app.register_blueprint(customer)
 
 
-# from app import controllers
