@@ -28,12 +28,17 @@
                             class="text-white price">{{locale.currency(product.price,grouping =
                             True)}}</span></span></p>
 
+                        {%set type = product.get_type() %}    
                         <div class="pb-3">
-                            {{product.type}}
+                           <span>Type: {{type}} </span> 
                         </div>
 
+                        {%set color = product.get_color() %}
                         <div class="pb-3">
-                            {{product.color}}
+                           <span>Color: {{color}}</span> 
+                        </div>
+                        <div class="add-to-cart">
+                            <button class="btn btn-primary">Add To Cart</button>
                         </div>
                     </div>
                 </div>

@@ -45,6 +45,15 @@ def about():
 @public.route('/products')
 def browse_products():
     """Allows a visitor to browse product catalog"""
+
+    def get_type(label):
+        type = str(label).split('.')
+        return type[1]
+
+    def get_color(label):
+        color = str(label).split('.')
+        return color[1] 
+        
     listOfProducts = Product.query.all()
     return render_template('productsCatalog.html',productList = listOfProducts,locale = locale)
 
