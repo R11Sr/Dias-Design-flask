@@ -38,7 +38,9 @@
                            <span>Color: {{color}}</span> 
                         </div>
                         <div class="add-to-cart">
-                            <button class="btn btn-primary">Add To Cart</button>
+                            <a href="{{url_for('customer.add_to_cart',prod_id = product.id)}}">
+                                <button class="btn btn-primary">Add To Cart</button>
+                            </a>
                         </div>
                     </div>
                 </div>

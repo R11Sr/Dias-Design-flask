@@ -100,7 +100,7 @@ def add_product():
 
 
 
-@admin.route('/uploads/<imageName>')
+@admin.route('/image-server/<imageName>')
 def get_image(imageName):
     """Fetch Image from image server."""
     try:
@@ -142,8 +142,7 @@ def edit_product(old_product_id):
             descrip = form.Description.data
             title = form.title.data
             color = form.color_options.data
-            type = form.type_options.data
-            
+            type = form.type_options.data           
 
             editing_object.price = price
             editing_object.Description = descrip

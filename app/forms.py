@@ -23,7 +23,7 @@ class ProductForm(FlaskForm):
     
 
 
-class AccountForm(FlaskForm):
+class RegistrationForm(FlaskForm):
     firstName = StringField('First Name', validators=[InputRequired()])
     lastName = StringField('Last Name', validators=[InputRequired()])
     email = StringField('Email', validators=[InputRequired()])

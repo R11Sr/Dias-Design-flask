@@ -13,7 +13,7 @@ from flask_login import login_user, logout_user, current_user
 from app.forms import LoginForm
 from app.models import Product, UserProfile
 
-from app.forms import AccountForm
+from app.forms import RegistrationForm
 from app import db
 from werkzeug.security import check_password_hash
 
@@ -65,7 +65,7 @@ def create_account():
     if current_user is not None and current_user.is_authenticated:
         return redirect(url_for('public.home'))
     
-    form = AccountForm()
+    form = RegistrationForm()
 
     if request.method == 'POST':
         if form.validate():
