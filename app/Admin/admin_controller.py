@@ -34,7 +34,7 @@ def admin_products():
         
     # all_products = Product.query.all()
     all_products = db.session.query(Product).order_by(Product.id)
-    return render_template('mange_products.html', products = all_products)
+    return render_template('manage_products.html', products = all_products)
 
 @admin.route('/admin/add_product',methods=['GET','POST'])
 @login_required

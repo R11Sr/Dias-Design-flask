@@ -12,6 +12,7 @@ from flask import render_template, request, redirect, url_for, flash,session
 from flask_login import login_user, logout_user, current_user
 from app.forms import LoginForm
 from app.models import Product, UserProfile
+from sqlalchemy.exc import IntegrityError
 
 from app.forms import RegistrationForm
 from app import db
@@ -80,7 +81,12 @@ def create_account():
             if password == retypePassword:
                 user = UserProfile(firstName,lastName,email,password)
                 db.session.add(user)
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    flash('It appears that Account exists please login, if the error persists please contact the system adminstrator','warning')
+                    return redirect(url_for('home'))
+
 
                 flash('Account Sucessfully Created!','success')
                 next = request.args.get('next')
