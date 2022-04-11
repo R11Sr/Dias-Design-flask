@@ -4,6 +4,8 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+
+
   
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
@@ -56,3 +58,9 @@
   </div>
 </nav>
 
+    <!-- store current user id here to be used to set the amount of items in cart -->
+<div class="" hidden id="">
+  <form  method="post">
+   <input type="text" value="{{current_user.get_id()}}" id="user_id" name="user_id">
+  </form>
+</div>

@@ -44,7 +44,14 @@ def view_shopping_cart():
 @customer.route('/place-order')
 def place_order():
     """Places the order for that customer"""
-    pass
+    try:
+        u_id = request.form['prod_id']
+    except:
+        internal_server_error()
+    
+    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == u_id)
+
+    
 
 @customer.route('/add-to-cart', methods=['POST'])
 @login_required
@@ -78,6 +85,31 @@ def add_to_cart():
         total+= item.quantity
 
     return jsonify({'cart':total})
+
+
+@customer.route('/set-cart-amount',methods=['POST'])
+def get_cart_amount():
+    """function to return the amount of items in current user's cart"""
+    ##################
+    # Interesting section here. used the request object to get the actual 
+    # bytes passed and usd string manipulation to gety the user ID
+    ##################
+    
+    data = request.get_data()
+    data = data.decode('utf-8')
+    
+    _  = data.find('=')
+    u_id = data[_:][1:]
+
+    lineItems = 0 
+
+    #fetchs the amount of items for user
+    user_items = ShoppingCart.query.filter(ShoppingCart.customer_id == u_id)
+    
+    for item in user_items:
+        lineItems+= item.quantity
+
+    return jsonify({'lineItems':lineItems})
 
 
 # user_loader callback. This callback is used to reload the user object from
@@ -122,5 +154,11 @@ def add_header(response):
 def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
+
+
+@customer.errorhandler(500)
+def internal_server_error(error):
+    """Custom 500 page."""
+    return render_template('500.html'), 500
 
     

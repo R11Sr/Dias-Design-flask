@@ -38,7 +38,7 @@
                            <span>Color: {{color}}</span> 
                         </div>
                         <div class="add-to-cart">
-                            <form action="POST" id="addToCartForm">
+                            <form action="POST" id="{{product.id}}" class="addToCartForm">
                                 <input type="text" hidden value="{{product.id}}" id="prod_id" name="prod_id">
                                 <button class="btn btn-primary submit">Add To Cart</button>
                             </form>
