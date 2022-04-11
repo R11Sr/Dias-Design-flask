@@ -50,9 +50,12 @@ $(document).ready(()=>{
     });
 
 });
-document.addEventListener('load',(e)=>{
-        
 
 
-    });
 
+$(document).ready(()=>{
+    $(".clickable-row").click(function() {
+        alert($(this).data("href"));
+         window.location = $(this).data("href");
+     });
+})

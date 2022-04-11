@@ -24,11 +24,16 @@
                 <th scope="row">Item image</th>
                 <td>{{order.id}}</td>
                 <td>{{itemNames[order.id]}}</td>
-                <td>{{order.price}}</td>
+                <td>{{locale.currency(itemPrices[order.id],grouping =
+                    True)}}</td>
                 <td>{{order.quantity}}</td>
-                <td>{{order.total}}</td>
+                <td>{{locale.currency(order.total,grouping =
+                    True)}}</td>
                 {% set status = order.get_status() %}
                 <td>{{status}}</td>
+                <td>
+                    <button class="btn " disabled>View Invoice</button>
+                </td>
             </tr>
         </tbody>
         {%endfor%}

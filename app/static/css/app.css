@@ -9,3 +9,7 @@ body {
     border-color: rgb(157, 64, 203);
 }
 
+
+tr.clickable-row {
+    cursor: pointer;
+}

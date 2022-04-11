@@ -46,16 +46,19 @@ def profile():
     """Renders the user profile with the pertinent Order data"""
 
     itemNames={}
+    itemPrices = {}
     c_uid = current_user.get_id()
     orders = Order.query.filter(Order.customer_id == c_uid).all()
 
     for order in orders:
         prod_id = order.product_id
         itemNames[order.id] = Product.query.filter(Product.id == prod_id).first().title
+        itemPrices[order.id] = Product.query.filter(Product.id == prod_id).first().price
+        
     
     
 
-    return render_template('customer_pages/profile.html',orders = orders, itemNames = itemNames)
+    return render_template('customer_pages/profile.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, locale = locale)
 
 
 @customer.route('/place-order')

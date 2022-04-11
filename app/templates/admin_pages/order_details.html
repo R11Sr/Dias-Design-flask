@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<script>console.log(order);</script>
+
+<div class="container">
+    <h1 class="page-header">Order ID: {{order['id']}}</h1>
+
+    <div class="">
+        <h4>Customer Name: {{order['custName']}}</h4>
+    </div>
+
+    <div class="">
+
+        <h4>Customer Email: {{order['custContact']}}</h4>
+    </div>
+
+    <div class="">
+        <h4>Item Ordered: {{order['itemTitle']}}</h4>
+    </div>
+
+    <div class="">
+        <h4>Quantity:{{order['quantity']}} </h4>
+    </div>
+
+    <div class="">
+        <h4>Order Total: {{locale.currency(order['total'],grouping =True)}} </h4>
+
+    </div>
+
+    <div class="">
+        <h4>Order Status: {{order['status']}}</h4>
+    </div>
+</div>
+
+
+
+
+{%endblock%}

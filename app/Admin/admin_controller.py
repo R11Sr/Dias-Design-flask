@@ -1,4 +1,5 @@
-from flask import Blueprint
+from urllib.parse import urldefrag
+from flask import Blueprint, jsonify,json
 import os
 
 from app import db, login_manager
@@ -10,7 +11,7 @@ from app.models import Product
 from app.models import ProductTypes
 from app.models import ProductColor
 from app.forms import ProductForm
-from app.models import UserProfile
+from app.models import UserProfile, Order
 from app.forms import LoginForm
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
@@ -36,6 +37,43 @@ def admin_products():
     all_products = db.session.query(Product).order_by(Product.id)
     return render_template('manage_products.html', products = all_products)
 
+@admin.route('/manage-orders')
+@login_required
+def view_orders():
+    """Renders a List of All orders"""
+    itemNames={}
+    itemPrices = {}
+    orders = Order.query.all()
+
+    for order in orders:
+        prod_id = order.product_id
+        itemNames[order.id] = Product.query.filter(Product.id == prod_id).first().title
+        itemPrices[order.id] = Product.query.filter(Product.id == prod_id).first().price 
+
+    return render_template('admin_pages/manage_orders.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, locale = locale)
+
+@admin.route('/manage-orders/<orderID>')
+@login_required
+def order_details(orderID):
+    """Exposes the order details for a specific order and allows at the admin to manage it"""
+    
+    orderInfo = Order.query.filter(Order.id ==orderID).first()
+    prodTitle = Product.query.filter(Product.id == orderInfo.product_id).first().title
+    cust = UserProfile.query.filter(UserProfile.id == orderInfo.customer_id).first()
+    
+    order = {
+        'id': orderID,
+        'custName': f"{cust.first_name} {cust.last_name}",
+        'custContact': f"{cust.email}",
+        'itemTitle': prodTitle,
+        'quantity': orderInfo.quantity,
+        'status': orderInfo.get_status(),
+        'total': orderInfo.total
+        }
+    
+    return render_template('admin_pages/order_details.html',order = order,locale = locale )
+
+
 @admin.route('/admin/add_product',methods=['GET','POST'])
 @login_required
 def add_product():
@@ -55,7 +93,6 @@ def add_product():
             Description = form.Description.data.rstrip()
             title = form.title.data.rstrip()
             color = form.color_options.data
-            print(f'*/*/*/*/*/*/*/*/*/color: {color}')
             type = form.type_options.data
             image = form.image.data
          
