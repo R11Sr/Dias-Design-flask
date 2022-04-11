@@ -58,6 +58,15 @@ class ProductColor(enum.Enum):
     multi_colored= 'Multi-coloured'
     white = 'White'
 
+class OrderStatus(enum.Enum):
+    pending = 'Pending'
+    paid = 'Paid'
+    processing= 'In Progress'
+    completed = 'Completed'
+    delivering = 'Out-for-delvery'
+    delivered = 'Delivered'
+    cancelled = 'Cancelled'
+
 
 
 
@@ -111,4 +120,23 @@ class ShoppingCart(db.Model):
     def __repr__(self):
         return f"<id: {self.id}, cust_id: {self.customer_id}>"
 
+class Order(db.Model):
+    __tablename__ = 'orders'
 
+    id = db.Column(db.Integer,primary_key =True)
+    customer_id = db.Column(db.Integer,nullable=False)
+    product_id=db.Column(db.Integer,nullable= False)
+    quantity=db.Column(db.Integer,nullable= False)
+    total = db.Column(db.Numeric(8,2),nullable  = False)
+    status = db.Column(db.Enum(OrderStatus))
+
+    def __init__(self,customer_id,product_id,quantity,total,status):
+        super().__init__()
+        self.customer_id = customer_id
+        self.product_id = product_id
+        self.quantity = quantity
+        self.total = total
+        self.status = status
+
+    def __repr__(self):
+        return f"< Order Id: {self.id}>"
