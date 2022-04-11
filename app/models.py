@@ -59,7 +59,7 @@ class ProductColor(enum.Enum):
     white = 'White'
 
 class OrderStatus(enum.Enum):
-    pending = 'Pending'
+    pending = 'pending'
     paid = 'Paid'
     processing= 'In Progress'
     completed = 'Completed'

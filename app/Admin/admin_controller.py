@@ -55,6 +55,7 @@ def add_product():
             Description = form.Description.data.rstrip()
             title = form.title.data.rstrip()
             color = form.color_options.data
+            print(f'*/*/*/*/*/*/*/*/*/color: {color}')
             type = form.type_options.data
             image = form.image.data
          

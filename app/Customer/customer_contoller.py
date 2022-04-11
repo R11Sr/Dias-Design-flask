@@ -11,7 +11,7 @@ from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash,session
 from flask_login import login_required, login_user, logout_user, current_user
 from app.forms import LoginForm
-from app.models import Product, UserProfile,ShoppingCart
+from app.models import Product, UserProfile,ShoppingCart,Order
 from sqlalchemy import select
 
 from app.forms import RegistrationForm
@@ -41,17 +41,33 @@ def view_shopping_cart():
 
     return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices)
 
+
+
 @customer.route('/place-order')
 def place_order():
     """Places the order for that customer"""
-    try:
-        u_id = request.form['prod_id']
-    except:
-        internal_server_error()
+    u_id = current_user.get_id()
     
     lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == u_id)
 
-    
+    for lineItem in lineItems:
+        c_uid = current_user.get_id()
+        price  = Product.query.filter(Product.id == lineItem.product_id).first().price
+        total = lineItem.quantity * price
+        status = 'pending'
+        order = Order(c_uid,lineItem.product_id,lineItem.quantity,total,status)
+
+        db.session.add(order)
+        db.session.commit()
+
+    for lineItem in lineItems:
+        db.session.delete(lineItem)
+        db.session.commit()
+
+    # return redirect(url_for('customer.profile'))
+    return redirect(url_for('public.browse_products'))
+
+            
 
 @customer.route('/add-to-cart', methods=['POST'])
 @login_required
