@@ -140,3 +140,7 @@ class Order(db.Model):
 
     def __repr__(self):
         return f"< Order Id: {self.id}>"
+
+    def get_status(self):
+       _ = str(self.status).split('.')
+       return _[1]
