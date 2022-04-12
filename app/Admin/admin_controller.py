@@ -1,3 +1,4 @@
+from crypt import methods
 from urllib.parse import urldefrag
 from flask import Blueprint, jsonify,json
 import os
@@ -8,9 +9,10 @@ from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
 from app.config import Config
 from app.models import Product
-from app.models import ProductTypes
+from app.models import ProductTypes 
 from app.models import ProductColor
-from app.forms import ProductForm
+from app.models import OrderStatus
+from app.forms import ProductForm, UpdateOrder
 from app.models import UserProfile, Order
 from app.forms import LoginForm
 from werkzeug.security import check_password_hash
@@ -52,7 +54,7 @@ def view_orders():
 
     return render_template('admin_pages/manage_orders.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, locale = locale)
 
-@admin.route('/manage-orders/<orderID>')
+@admin.route('/manage-orders/<orderID>',methods=['GET','POST'])
 @login_required
 def order_details(orderID):
     """Exposes the order details for a specific order and allows at the admin to manage it"""
@@ -71,7 +73,26 @@ def order_details(orderID):
         'total': orderInfo.total
         }
     
-    return render_template('admin_pages/order_details.html',order = order,locale = locale )
+    form = UpdateOrder(status_options = orderInfo.status.value) # pre-selects the status for the drop down option
+    form.status_options.choices = [(option.value,option.name) for option in OrderStatus]
+
+    # Save updated status to the db
+    if request.method  =='POST':
+        if form.validate():
+            status = form.status_options.data
+            orderInfo.status = OrderStatus(str(status))
+            print(orderInfo)
+            db.session.commit()
+            
+            flash('Order status updated!','success')
+            redirect(url_for('admin.view_orders'))
+        else:
+            print(form.errors)
+            flash(form.errors)
+            return redirect(request.url)
+    
+    return render_template('admin_pages/order_details.html',order = order,locale = locale, form = form )
+
 
 
 @admin.route('/admin/add_product',methods=['GET','POST'])
@@ -96,8 +117,7 @@ def add_product():
             type = form.type_options.data
             image = form.image.data
          
-            # print(f"received from addprod Form: {price}, {title}, {Description}, { ProductColor(str(color))},{ProductTypes(str(type))},{image}")
-
+ 
             if image.filename == '':
                 flash("No image has been selected",'warning')
                 return redirect(request.url)

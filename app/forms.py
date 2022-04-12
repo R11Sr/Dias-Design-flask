@@ -21,7 +21,8 @@ class ProductForm(FlaskForm):
     image = FileField('image',validators=[FileRequired(),FileAllowed(['jpg','png','jpeg'],'Select image files only.')])
 
     
-
+class UpdateOrder(FlaskForm):
+    status_options= SelectField('status',validators=[DataRequired()])
 
 class RegistrationForm(FlaskForm):
     firstName = StringField('First Name', validators=[InputRequired()])

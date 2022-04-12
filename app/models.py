@@ -59,8 +59,8 @@ class ProductColor(enum.Enum):
     white = 'White'
 
 class OrderStatus(enum.Enum):
-    pending = 'pending'
     paid = 'Paid'
+    pending = 'pending'
     processing= 'In Progress'
     completed = 'Completed'
     delivering = 'Out-for-delvery'
@@ -139,7 +139,7 @@ class Order(db.Model):
         self.status = status
 
     def __repr__(self):
-        return f"< Order Id: {self.id}>"
+        return f"< Order Id: {self.id}, Status: {self.status}>"
 
     def get_status(self):
        _ = str(self.status).split('.')

@@ -28,10 +28,18 @@
         <h4>Order Total: {{locale.currency(order['total'],grouping =True)}} </h4>
 
     </div>
+    
+    <!-- miniature form to manage the order update progress -->
 
+    <form action="" method="POST" enctype="multipart/form-data">
+        {{form.csrf_token}}
     <div class="">
-        <h4>Order Status: {{order['status']}}</h4>
+        <h4>Order Status: {{form.status_options(class_='form-control')}}</h4>
     </div>
+
+    <button type="submit info" class="btn btn-info">Update Order</button>
+
+    </form>
 </div>
 
 

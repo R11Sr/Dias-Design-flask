@@ -16,7 +16,6 @@ window.addEventListener('load',(e)=>{
             },
             type: 'POST',
             url: '/add-to-cart'
-            // url: '{{url_for("customer.add_to_cart")|tojson|safe}'
         }).done((response)=>{
             $('#cart-display').effect("shake");
             $('#cart-amount').text(response.cart);
@@ -37,14 +36,11 @@ window.addEventListener('load',(e)=>{
 $(document).ready(()=>{
     $.ajax({
         data :{
-            // user : '7'
             user :$('#user_id').val()
         },
         type: 'POST',
         url: '/set-cart-amount'
-        // url: '{{url_for("customer.add_to_cart")|tojson|safe}'
     }).done((response)=>{
-        // console.log(response);
         $('#cart-amount').text(response.lineItems);
 
     });
@@ -52,10 +48,9 @@ $(document).ready(()=>{
 });
 
 
-
+// make table rows clickable 
 $(document).ready(()=>{
     $(".clickable-row").click(function() {
-        alert($(this).data("href"));
          window.location = $(this).data("href");
      });
 })
