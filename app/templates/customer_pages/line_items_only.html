@@ -1,0 +1,18 @@
+{%for item in lineItems%}
+
+<tr>
+    <th scope="row">Item image</th>
+    <td>{{itemNames[item.id]}}</td>
+    <td>{{locale.currency(itemPrices[item.id],grouping =
+        True)}}</td>
+    <td>{{item.quantity}}</td>
+    {% set total = item.quantity * itemPrices[item.id] %}
+    <td>{{locale.currency(total,grouping =
+        True)}}</td>
+    <td>
+        <form action="" method="POST" id="{{item.id}}" class="RemoveItem">
+            <a href="" class="btn btn-danger submit" id="{{item.id}}">Remove</a>
+        </form>
+    </td>
+</tr>
+{%endfor%}

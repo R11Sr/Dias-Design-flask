@@ -16,6 +16,7 @@ from app.models import Product, UserProfile,ShoppingCart,Order
 from sqlalchemy import select
 import  boto3
 import botocore
+import locale
 
 
 from app.forms import RegistrationForm
@@ -43,9 +44,31 @@ def view_shopping_cart():
         itemNames[item.id] = name
         itemPrices[item.id] = price
 
-    return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices)
+    return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices,locale = locale)
 
+@customer.route('/remove-from-cart',methods=['POST'])
+def remove_from_cart():
+    """Removes the Item from the Cart refreshes it"""
 
+    item_id  = request.form['lineItem_id']
+    c_uid = current_user.get_id()
+    item = ShoppingCart.query.filter(ShoppingCart.id == item_id).filter(ShoppingCart.customer_id == c_uid).first()
+    db.session.delete(item)
+    db.session.commit()
+
+    itemNames ={}
+    itemPrices ={}
+    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == c_uid).all()
+    print(lineItems)
+
+    for item in lineItems:
+       prod = Product.query.filter(Product.id == item.product_id).first()
+       name = prod.title
+       price = prod.price
+       itemNames[item.id] = name
+       itemPrices[item.id] = price
+
+    return render_template('customer_pages/line_items_only.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices,locale = locale)
 
 @customer.route('/profile')
 def profile():

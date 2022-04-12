@@ -13,19 +13,27 @@
             </tr>    
         </thead>
 
-        {%for item in lineItems%}
-        <tbody>
+        <tbody class="table-body">
+            {%for item in lineItems%}
 
             <tr>
                 <th scope="row">Item image</th>
                 <td>{{itemNames[item.id]}}</td>
-                <td>{{itemPrices[item.id]}}</td>
+                <td>{{locale.currency(itemPrices[item.id],grouping =
+                    True)}}</td>
                 <td>{{item.quantity}}</td>
                 {% set total = item.quantity * itemPrices[item.id] %}
-                <td>{{total}}</td>
+                <td>{{locale.currency(total,grouping =
+                    True)}}</td>
+                <td>
+                    <form action="" method="POST" id="{{item.id}}" class="RemoveItem">
+                        <input type="text" hidden value="{{item.id}}" id="lineItem_id" name="lineItem_id">
+                        <button class="btn btn-danger submit">Remove</button>
+                    </form>
+                </td>
             </tr>
+            {%endfor%}
         </tbody>
-        {%endfor%}
     </table>
 
     <div class="d-flex">
