@@ -2,7 +2,6 @@
 
 {% block main %}
 
-<script>console.log(order);</script>
 
 <div class="container">
     <h1 class="page-header">Order ID: {{order['id']}}</h1>
@@ -26,20 +25,31 @@
 
     <div class="">
         <h4>Order Total: {{locale.currency(order['total'],grouping =True)}} </h4>
-
     </div>
     
     <!-- miniature form to manage the order update progress -->
 
     <form action="" method="POST" enctype="multipart/form-data">
-        {{form.csrf_token}}
-    <div class="">
-        <h4>Order Status: {{form.status_options(class_='form-control')}}</h4>
-    </div>
+            {{form.csrf_token}}
+        <div class="">
+            <h4>Order Status: {{form.status_options(class_='form-control')}}</h4>
+        </div>
 
-    <button type="submit info" class="btn btn-info">Update Order</button>
+        <button type="submit info" class="btn btn-info">Update Order</button>
 
     </form>
+
+    <div class="pt-3">
+        <a href="{{url_for('admin.generate_invoice',orderID = order['id'])}}" class="btn btn-success">Create Invoice</a>
+    </div>
+
+    <div class="pt-3">
+        <a href="{{url_for('admin.view_invoice',invoiceName = order['invoiceName'])}}" class="btn btn-info {{order['invoice']}}"> View Invoice</a>
+    </div>
+
+    <div class="pt-3">
+        <a href="{{url_for('admin.upload_invoice',orderID =  order['id'])}}" class="btn btn-info"> Upload Invoice</a>
+    </div>
 </div>
 
 

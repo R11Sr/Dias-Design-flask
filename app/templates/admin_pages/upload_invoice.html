@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="container">
+    <h1 class="page-header">Select an Invoice for Order #{{orderID}}</h1>
+
+    <form action="" method="POST" enctype="multipart/form-data" >
+        {{form.csrf_token}}
+
+        <div class="fom-group pb-3">
+            <label for="colFormLabel" class="col-sm-2 col-form-label">
+                {{form.invoice.label}} <span class="text-danger">(Required)</span>
+            </label>
+            <div class="col-sm-10">
+                {{form.invoice(class_='custom-file-input pb-3')}}
+    
+            </div>
+        </div>
+    
+    
+        <button type="submit info" class="btn btn-info">Upload Invoice</button>
+    </form>
+
+</div>
+
+
+{%endblock%}

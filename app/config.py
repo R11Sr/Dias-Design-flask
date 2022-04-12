@@ -15,4 +15,5 @@ class Config(object):
     BUCKET_NAME = os.environ.get('BUCKET_NAME')
 
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') 
+    STATIC_IMAGES_FOLDER = os.environ.get('STATIC_IMAGES_FOLDER')
     

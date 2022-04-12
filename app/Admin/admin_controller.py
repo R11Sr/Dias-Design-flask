@@ -1,10 +1,10 @@
 from crypt import methods
 from urllib.parse import urldefrag
-from flask import Blueprint, jsonify,json
+from flask import Blueprint, jsonify,json, send_from_directory
 import os
 
-from app import db, login_manager
-from flask import render_template, request, redirect, url_for, flash,session
+from app import db, login_manager, app
+from flask import render_template, request, redirect, url_for, flash,session,make_response,abort
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
 from app.config import Config
@@ -12,7 +12,7 @@ from app.models import Product
 from app.models import ProductTypes 
 from app.models import ProductColor
 from app.models import OrderStatus
-from app.forms import ProductForm, UpdateOrder
+from app.forms import ProductForm, UpdateOrder,UploadInvoice
 from app.models import UserProfile, Order
 from app.forms import LoginForm
 from werkzeug.security import check_password_hash
@@ -20,6 +20,7 @@ from werkzeug.utils import secure_filename
 import  boto3
 import botocore
 import locale
+import pdfkit
 
 locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' ) 
 admin = Blueprint('admin',__name__)
@@ -38,6 +39,103 @@ def admin_products():
     # all_products = Product.query.all()
     all_products = db.session.query(Product).order_by(Product.id)
     return render_template('manage_products.html', products = all_products)
+
+
+@admin.route('/generate-invoice/<orderID>')
+@login_required
+def generate_invoice(orderID):
+    """Generates an invoice for a selected Order"""
+
+    # instructions were found here: https://www.youtube.com/watch?v=C8jxInLM9nM
+    # used the aux tool here: https://github.com/JazzCore/python-pdfkit/wiki/Using-wkhtmltopdf-without-X-server
+
+    orderInfo = Order.query.filter(Order.id ==orderID).first()
+    prodTitle = Product.query.filter(Product.id == orderInfo.product_id).first().title
+    prodPrice = Product.query.filter(Product.id == orderInfo.product_id).first().price
+    cust = UserProfile.query.filter(UserProfile.id == orderInfo.customer_id).first()
+    
+    order = {
+        'id': orderID,
+        'custName': f"{cust.first_name} {cust.last_name}",
+        'custContact': f"{cust.email}",
+        'itemTitle': prodTitle,
+        'quantity': orderInfo.quantity,
+        'price': prodPrice,
+        'status': orderInfo.get_status(),
+        'total': orderInfo.total
+        }
+
+    rendered = render_template('admin_pages/invoice_template.html',order = order,locale = locale)
+    pdf = pdfkit.from_string(rendered,False)
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=Dias-Design-Inv-{orderInfo.id}.pdf' 
+    return response
+
+@admin.route('/get-invoice/<invoiceName>')
+@login_required
+def view_invoice(invoiceName):
+    """fetch the Invoice from the Storage Server."""
+
+    try:
+        BUCKET_NAME = Config.BUCKET_NAME
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+        file = s3.get_object(Bucket = BUCKET_NAME,Key = invoiceName)
+        
+        response = make_response(file['Body'].read())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename={invoiceName}' 
+
+        return response
+
+    except botocore.exceptions.ClientError as error:
+        flash(f'Invoice {invoiceName} was not found')
+        print(f"file: {invoiceName} not found!")
+    return redirect(request.url)    
+
+
+@admin.route('/upload-invoice/<orderID>',methods=['GET','POST'])
+@login_required
+def upload_invoice(orderID):
+    """Used to upload the Invoice for a specific Order"""
+    form = UploadInvoice()
+
+    if request.method == 'POST':
+        if form.validate():
+            invoice = form.invoice.data
+
+            invoiceName = secure_filename(invoice.filename.rstrip())
+            invoice.save(str(os.path.join(Config.UPLOAD_FOLDER,invoiceName)))
+
+             #check  to see if the Invoice is already on the sever
+
+            try:
+                BUCKET_NAME = Config.BUCKET_NAME
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+                file = s3.get_object(Bucket = BUCKET_NAME,Key = invoiceName)
+                    
+                #Save the image to the s3 bucket since  not there
+            except botocore.exceptions.ClientError:
+                BUCKET_NAME = Config.BUCKET_NAME
+                s3 = boto3.resource('s3')
+                invoiceData = open(str(os.path.join(Config.UPLOAD_FOLDER,invoiceName)),'rb')
+                s3.Bucket(BUCKET_NAME).put_object(Key=invoiceName,Body=invoiceData)
+                
+                flash(f"{invoiceName} Uploaded",'success')
+                return redirect(url_for('admin.view_orders')) 
+        else:
+            flash(form.errors,'warning')
+            return redirect(request.url)
+    
+    return render_template('admin_pages/upload_invoice.html',form = form,orderID = orderID)
+    
+                
 
 @admin.route('/manage-orders')
 @login_required
@@ -62,7 +160,10 @@ def order_details(orderID):
     orderInfo = Order.query.filter(Order.id ==orderID).first()
     prodTitle = Product.query.filter(Product.id == orderInfo.product_id).first().title
     cust = UserProfile.query.filter(UserProfile.id == orderInfo.customer_id).first()
-    
+    invoiceStatus = 'disabled'
+    invoiceName = f'Dias-Design-Inv-{orderInfo.id}.pdf'
+    if invoiceAvailable(invoiceName):
+        invoiceStatus = 'enabled'
     order = {
         'id': orderID,
         'custName': f"{cust.first_name} {cust.last_name}",
@@ -70,7 +171,9 @@ def order_details(orderID):
         'itemTitle': prodTitle,
         'quantity': orderInfo.quantity,
         'status': orderInfo.get_status(),
-        'total': orderInfo.total
+        'total': orderInfo.total,
+        'invoice': invoiceStatus,
+        'invoiceName':invoiceName
         }
     
     form = UpdateOrder(status_options = orderInfo.status.value) # pre-selects the status for the drop down option
@@ -92,6 +195,24 @@ def order_details(orderID):
             return redirect(request.url)
     
     return render_template('admin_pages/order_details.html',order = order,locale = locale, form = form )
+
+@admin.route('/invoiceAvailable')
+@login_required
+def invoiceAvailable(invoiceName):
+    """returns a boolean to see if an invoice exists on the storage server"""
+    try:
+        BUCKET_NAME = Config.BUCKET_NAME
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+        file = s3.get_object(Bucket = BUCKET_NAME,Key = invoiceName)
+
+        return True
+
+    except botocore.exceptions.ClientError as error:
+        pass
+    return False
 
 
 
@@ -176,6 +297,15 @@ def get_image(imageName):
         print(f"file: {imageName} not found!")
     return "File Not Found"
     
+
+@admin.route('/get-logo/<logoName>')
+def getLogo(logoName):
+    """Fetch logo from static folder"""
+    try: 
+        return send_from_directory(os.path.join(os.getcwd(),app.config['STATIC_IMAGES_FOLDER']),logoName)
+    except FileNotFoundError:
+        abort(404)
+
 
 
 @admin.route('/admin/edit_product/<old_product_id>',methods=['GET','POST'])

@@ -24,6 +24,9 @@ class ProductForm(FlaskForm):
 class UpdateOrder(FlaskForm):
     status_options= SelectField('status',validators=[DataRequired()])
 
+class UploadInvoice(FlaskForm):
+    invoice = FileField('invoice',validators=[FileRequired(),FileAllowed(['pdf'],'Please Select the Invoice in PDF format')])
+
 class RegistrationForm(FlaskForm):
     firstName = StringField('First Name', validators=[InputRequired()])
     lastName = StringField('Last Name', validators=[InputRequired()])

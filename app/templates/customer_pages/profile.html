@@ -27,7 +27,7 @@
                 <td>{{locale.currency(itemPrices[order.id],grouping =
                     True)}}</td>
                 <td>{{order.quantity}}</td>
-                <td>{{locale.currency(order.total,grouping =
+                <td>{{locale.currency(,grouping =
                     True)}}</td>
                 {% set status = order.get_status() %}
                 <td>{{status}}</td>
