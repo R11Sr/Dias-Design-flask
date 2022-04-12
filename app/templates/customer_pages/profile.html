@@ -23,25 +23,21 @@
             <tr>
                 <th scope="row">Item image</th>
                 <td>{{order.id}}</td>
-                <td>{{itemNames[order.id]}}</td>
-                <td>{{locale.currency(itemPrices[order.id],grouping =
+                <td>{{orderInfo['names'][order.id]}}</td>
+                <td>{{locale.currency(orderInfo['prices'][order.id],grouping =
                     True)}}</td>
                 <td>{{order.quantity}}</td>
-                <td>{{locale.currency(,grouping =
+                <td>{{locale.currency(order.total,grouping =
                     True)}}</td>
                 {% set status = order.get_status() %}
                 <td>{{status}}</td>
                 <td>
-                    <button class="btn " disabled>View Invoice</button>
+                    <a href="{{url_for('customer.view_invoice',invoiceName = orderInfo['invoice_names'][order.id])}}" class="btn {{orderInfo['invoices'][order.id]}} btn-info"> View Invoice </a>
                 </td>
             </tr>
         </tbody>
         {%endfor%}
     </table>
 
-    <div class="d-flex">
-        <a href="{{url_for('customer.place_order')}}">
-            <button class="btn btn-success justify-content-end"> Place Order</button>
-        </a>
-    </div>
+
 {%endblock%}

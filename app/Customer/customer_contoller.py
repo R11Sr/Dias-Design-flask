@@ -5,14 +5,18 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 from crypt import methods
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, make_response
 
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash,session
+from flask import render_template, request, redirect, url_for, flash,session,make_response
 from flask_login import login_required, login_user, logout_user, current_user
+from app.config import Config
 from app.forms import LoginForm
 from app.models import Product, UserProfile,ShoppingCart,Order
 from sqlalchemy import select
+import  boto3
+import botocore
+
 
 from app.forms import RegistrationForm
 from app import db
@@ -41,12 +45,16 @@ def view_shopping_cart():
 
     return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices)
 
+
+
 @customer.route('/profile')
 def profile():
     """Renders the user profile with the pertinent Order data"""
 
     itemNames={}
     itemPrices = {}
+    showInvoices={}
+    invoiceNames ={}
     c_uid = current_user.get_id()
     orders = Order.query.filter(Order.customer_id == c_uid).all()
 
@@ -55,13 +63,72 @@ def profile():
         itemNames[order.id] = Product.query.filter(Product.id == prod_id).first().title
         itemPrices[order.id] = Product.query.filter(Product.id == prod_id).first().price
         
-    
-    
+        invoiceName = f'Dias-Design-Inv-{order.id}.pdf'
 
-    return render_template('customer_pages/profile.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, locale = locale)
+        showInvoices[order.id] = 'disabled'
 
+        if invoiceStatus(order.id):
+            showInvoices[order.id] = 'enabled'
+            invoiceNames[order.id] = invoiceName
+
+    
+    orderInfo ={ 
+        'names': itemNames,
+        'prices': itemPrices,
+        'orders': orders,
+        'invoices': showInvoices,
+        'invoice_names':invoiceNames
+
+    }
+
+    return render_template('customer_pages/profile.html',orderInfo =orderInfo, orders = orders, itemNames = itemNames, itemPrices = itemPrices, showInvoices = showInvoices, locale = locale)
+
+
+@customer.route('/invoice-status,<orderID>')
+def invoiceStatus(orderID):
+    """returns a boolean to see if an invoice exists on the storage server"""
+    invoiceName = f'Dias-Design-Inv-{orderID}.pdf'
+    try:
+        BUCKET_NAME = Config.BUCKET_NAME
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+        file = s3.get_object(Bucket = BUCKET_NAME,Key = invoiceName)
+
+        return True
+
+    except botocore.exceptions.ClientError as error:
+        pass
+    return False
+
+
+@customer.route('/get-invoice/<invoiceName>')
+@login_required
+def view_invoice(invoiceName):
+    """fetch the Invoice from the Storage Server."""
+
+    try:
+        BUCKET_NAME = Config.BUCKET_NAME
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id = Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = Config.AWS_SECRET_ACCESS_KEY)
+        file = s3.get_object(Bucket = BUCKET_NAME,Key = invoiceName)
+        
+        response = make_response(file['Body'].read())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename={invoiceName}' 
+
+        return response
+
+    except botocore.exceptions.ClientError as error:
+        flash(f'Invoice {invoiceName} was not found')
+        print(f"file: {invoiceName} not found!")
+    return redirect(request.url)   
 
 @customer.route('/place-order')
+@login_required
 def place_order():
     """Places the order for that customer"""
     u_id = current_user.get_id()
