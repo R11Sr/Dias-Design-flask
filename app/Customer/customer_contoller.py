@@ -78,14 +78,17 @@ def profile():
     itemPrices = {}
     showInvoices={}
     invoiceNames ={}
+    productsImages = {}
+
     c_uid = current_user.get_id()
     orders = Order.query.filter(Order.customer_id == c_uid).all()
 
     for order in orders:
         prod_id = order.product_id
-        itemNames[order.id] = Product.query.filter(Product.id == prod_id).first().title
-        itemPrices[order.id] = Product.query.filter(Product.id == prod_id).first().price
-        
+        product = Product.query.filter(Product.id == prod_id).first()
+        itemNames[order.id] = product.title
+        itemPrices[order.id] = product.price
+        productsImages[order.id] = product.image
         invoiceName = f'Dias-Design-Inv-{order.id}.pdf'
 
         showInvoices[order.id] = 'disabled'
@@ -100,11 +103,13 @@ def profile():
         'prices': itemPrices,
         'orders': orders,
         'invoices': showInvoices,
-        'invoice_names':invoiceNames
+        'invoice_names':invoiceNames,
+        'productImage': productsImages
+
 
     }
 
-    return render_template('customer_pages/profile.html',orderInfo =orderInfo, orders = orders, itemNames = itemNames, itemPrices = itemPrices, showInvoices = showInvoices, locale = locale)
+    return render_template('customer_pages/profile.html',orderInfo =orderInfo, orders = orders, locale = locale)
 
 
 @customer.route('/invoice-status,<orderID>')

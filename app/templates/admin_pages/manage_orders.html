@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 
 {% block main %}
+<style>
+    body{
+        background:  #6E2375 ;
+    }
+</style>
 
-<h1 class="page-header">Order Management</h1>
+<h1 class="page-header text-white">Order Management</h1>
+<p class="text-white">Please Select an Order to update</p>
 
-<table class="table table-striped table-hover">
+<table class="table table-striped table-hover table-borderless text-white">
     <thead>
-        <th scope="col">Img</th>
+        <th scope="col"></th>
         <th scope="col">Order ID</th>
         <th scope="col">Title</th>
         <th scope="col">Price</th>
@@ -18,7 +24,19 @@
         {%for order in orders%}
 
         <tr class="clickable-row" data-href="{{url_for('admin.order_details',orderID = order.id)}}" method = 'GET'>
-            <td>Item Image</td>
+            <td>
+                <img                         
+                {#Check if there is and image associated with that product#}
+                {%if productsImage[order.id]%}
+                src="{{url_for('admin.get_image',imageName = productsImage[order.id])}}" 
+                {%else%}
+                src="#"
+                {%endif%}
+                alt="'{{productsImage[order.id]}}'"
+                width="50em"
+                height="50em"
+                >
+            </td>
             <th scope="row">{{order.id}}</th>
             <td>{{itemNames[order.id]}}</td>
             <td>{{locale.currency(itemPrices[order.id],grouping =

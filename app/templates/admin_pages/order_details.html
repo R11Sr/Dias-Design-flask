@@ -2,8 +2,15 @@
 
 {% block main %}
 
+<style>
+    body {
+        background: #6E2375;
+    }
+</style>
 
-<div class="container">
+
+
+<div class="container text-white">
     <h1 class="page-header">Order ID: {{order['id']}}</h1>
 
     <div class="">
@@ -26,31 +33,40 @@
     <div class="">
         <h4>Order Total: {{locale.currency(order['total'],grouping =True)}} </h4>
     </div>
-    
+
     <!-- miniature form to manage the order update progress -->
 
-    <form action="" method="POST" enctype="multipart/form-data">
-            {{form.csrf_token}}
-        <div class="">
+    <form action="" method="POST" class="pb-5" enctype="multipart/form-data">
+        {{form.csrf_token}}
+        <div class="col-sm-4">
             <h4>Order Status: {{form.status_options(class_='form-control')}}</h4>
         </div>
 
-        <button type="submit info" class="btn btn-info">Update Order</button>
+        <button type="submit info" class="btn btn-primary">Update Order</button>
 
     </form>
+    <hr>
 
-    <div class="pt-3">
-        <a href="{{url_for('admin.generate_invoice',orderID = order['id'])}}" class="btn btn-success">Create Invoice</a>
-    </div>
+    <div class="menu pb-5">
+        <div class="pe-5">
+            <a href="{{url_for('admin.generate_invoice',orderID = order['id'])}}" class="btn btn-success ">Create
+                Invoice</a>
 
-    <div class="pt-3">
-        <a href="{{url_for('admin.view_invoice',invoiceName = order['invoiceName'])}}" class="btn btn-info {{order['invoice']}}"> View Invoice</a>
-    </div>
+        </div>
 
-    <div class="pt-3">
-        <a href="{{url_for('admin.upload_invoice',orderID =  order['id'])}}" class="btn btn-info"> Upload Invoice</a>
+        <div class="pe-5">
+            <a href="{{url_for('admin.upload_invoice',orderID =  order['id'])}}" class="btn btn-primary"> Upload
+                Invoice</a>
+        </div>
+
+        <div class="pe-5">
+            <a href="{{url_for('admin.view_invoice',invoiceName = order['invoiceName'])}}"
+                class="btn btn-primary {{order['invoice']}}"> View Invoice</a>
+
+        </div>
     </div>
 </div>
+
 
 
 

@@ -1,12 +1,32 @@
 body {
     padding-top: 5rem;
 }
+.header{
+    background-color: white;
+}
+
+.menu div{
+    display: inline;
+}
+
+.home{
+    color: white;
+}
+
+.dark-font{
+    color: black;
+}
+
+.footer{
+    color: white;
+}
 
 #full-property-image{
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     border: 1px;
     border-color: rgb(157, 64, 203);
+    
 }
 
 

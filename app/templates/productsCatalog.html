@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block main %}
-<div class="heading"><h1>Products</h1>
+<style>
+    body{
+        background: linear-gradient(90deg, #BB6FDE 50%, #6E2375 50%);
+    }
+</style>
+<div class="heading" style="color: white;" ><h1>Products</h1>
 </div>
 
 <div class="container">
@@ -17,23 +22,25 @@
                         {%else%}
                         src="#"
                         {%endif%}
-                        alt="'{{product.title}}'"                     
+                        alt="'{{product.title}}'"  
+                        width="298px"
+                        height="370px"                                          
                     >
                     <div class="card-body">
                         <h5 class="card-title">{{product.title}}</h5>
                         <p class="pb-1">
-                            <span class="text-muted">{{product.Description}}</span>
+                            <span class="text-muted d-inline-block text-truncate" style="max-width: 250px;">{{product.Description}}</span>
                         </p>
                         <p class="card-text pb-2"><span class="elongated-div"><span
                             class="price">{{locale.currency(product.price,grouping =
                             True)}}</span></span></p>
 
-                        {%set type = product.get_type() %}    
+                        {%set type = product.type.value %}    
                         <div class="pb-3">
                            <span>Type: {{type}} </span> 
                         </div>
 
-                        {%set color = product.get_color() %}
+                        {%set color = product.color.value %}
                         <div class="pb-3">
                            <span>Color: {{color}}</span> 
                         </div>

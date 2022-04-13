@@ -47,6 +47,7 @@ class ProductTypes(enum.Enum):
     Accessories ='Accessories'
     Tops = 'Tops'
     Bikini_and_Coverup = 'Bikini & Coverup'
+    swimsuits = 'swimsuits'
 
 class ProductColor(enum.Enum):
     red = 'Red'

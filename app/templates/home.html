@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 
 {% block main %}
-<h1 class="page-header">DIAS DESIGN</h1>
-<p class="lead">Welcome to Dias Designs, where we provide self-made clothing items made from crochet.</p>
+<style>
+    body{
+        background: linear-gradient(90deg, #BB6FDE 50%, #6E2375 50%);
+    }
+</style>
+<div class="home">
+  
+
+    <div class="container d-flex justify-content-end">
+    
+        <div class="text pe-3" style="color: white;">
+            <h1 class="page-header">WELCOME TO</h1>
+            <img src="{{url_for('static',filename='images/Dias-Design-logo.png')}}" alt="" srcset="" width="550em" height="400em" >
+            <p class="lead"> Where we provide self-made clothing items made from crochet.</p>
+        </div>
+        <img src="{{url_for('static',filename='images/Landing-page.png')}}" 
+        alt="" srcset="" class="ps-1">
+    </div>
+</div>
 {% endblock %}

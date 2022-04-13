@@ -143,14 +143,18 @@ def view_orders():
     """Renders a List of All orders"""
     itemNames={}
     itemPrices = {}
+    productsImage = {}
     orders = Order.query.all()
 
     for order in orders:
         prod_id = order.product_id
-        itemNames[order.id] = Product.query.filter(Product.id == prod_id).first().title
-        itemPrices[order.id] = Product.query.filter(Product.id == prod_id).first().price 
+        product =  Product.query.filter(Product.id == prod_id).first()
+        itemNames[order.id] =product.title
+        itemPrices[order.id] = product.price 
+        productsImage[order.id] = product.image
 
-    return render_template('admin_pages/manage_orders.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, locale = locale)
+
+    return render_template('admin_pages/manage_orders.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, productsImage = productsImage, locale = locale)
 
 @admin.route('/manage-orders/<orderID>',methods=['GET','POST'])
 @login_required

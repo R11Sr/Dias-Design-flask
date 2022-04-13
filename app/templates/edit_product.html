@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
 {% block main %}
+<style>
+    body{
+        background:  #6E2375 ;
+    }
+</style>
 
-<div class="container col-md-8">
+<div class="container col-md-8 text-white">
     <div class="wrapper">
         <div class="row">
-            <div class="col" id="image-column">
-                <img class="h-100 d-inline-block" 
+            <div class="col d-flex align-items-center pe-5" id="image-column">
+                <img class="d-inline-block" 
 
                 {#Check if there is and image associated with that product#}
                 {%if prod.image%}
@@ -14,7 +19,9 @@
                 {%else%}
                 src="#"
                 {%endif%}
-                alt="No Image found for: '{{prod.title}}'" width="400px" 
+                alt="No Image found for: '{{prod.title}}'" 
+                width="500em"
+                height="500em" 
                 id="full-property-image"
                 >   
 

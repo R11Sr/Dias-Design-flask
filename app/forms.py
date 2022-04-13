@@ -13,12 +13,12 @@ class LoginForm(FlaskForm):
 
 
 class ProductForm(FlaskForm):
-    title = StringField('title', validators=[InputRequired()])
+    title = StringField('Title', validators=[InputRequired()])
     Description = TextAreaField('Description',validators=[DataRequired()])
-    price= StringField('price', validators=[InputRequired()])
-    color_options= SelectField('color',validators=[DataRequired()])
-    type_options = SelectField('type',validators=[DataRequired()])  
-    image = FileField('image',validators=[FileRequired(),FileAllowed(['jpg','png','jpeg'],'Select image files only.')])
+    price= StringField('Price', validators=[InputRequired()])
+    color_options= SelectField('Color',validators=[DataRequired()])
+    type_options = SelectField('Type',validators=[DataRequired()])  
+    image = FileField('Image',validators=[FileRequired(),FileAllowed(['jpg','png','jpeg'],'Select image files only.')])
 
     
 class UpdateOrder(FlaskForm):
