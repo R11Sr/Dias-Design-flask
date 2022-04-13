@@ -1,10 +1,17 @@
 {% extends "base.html" %}
 
 {% block main %}
-  <div class="login-form center-block">
+
+<style>
+  body{
+      background:  #6E2375 ;
+  }
+</style>
+
+  <div class="login-form center-block text-white">
     <h2>Please Log in</h2>
     {% include 'flash_messages.html' %}
-    <form action="{{ url_for('public.login') }}" class="pb-3" method="post">
+    <form action="{{ url_for('public.login') }}" class="pb-3 col-6" method="post">
       {{ form.csrf_token }}
       <div class="form-group pb-3">
         {{ form.email.label }}

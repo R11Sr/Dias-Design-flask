@@ -1,6 +1,41 @@
 {% extends "base.html" %}
 
 {% block main %}
-<h1 class="page-header">About Us</h1>
-<p>Hi, I am Danae!</p>
+
+<style>
+    body{
+        background:  #6E2375 ;
+    }
+</style>
+
+
+<div class="container col-md-8 text-white">
+    <div class="wrapper">
+        <div class="row">
+            <div class="col d-flex align-items-center pe-5">
+                <img class="d-inline-block" 
+                alt="Picture of Founder"
+                src="{{url_for('static',filename='images/2022-04-12.png')}}"
+                width="500em"
+                height="700em" 
+                >
+            </div>
+            <div class="col">
+                <div class="container">
+                    <h1 class="page-header pb-3">About Us</h1>
+                    <h3 class="pb-3">Hi, I am Danae!</h3>
+                    
+                    <h5 >
+                        I founded Dias Designs with the aim of designing clothing that women would feel sexy and empowered while wearing!
+
+What started as a summer hobby has grown into an entrepreneurial ingenuity. Dias Designs has evolved from cropped tops and keychains into swimwear and handbags and there is more in store so stay tuned!
+                    
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}

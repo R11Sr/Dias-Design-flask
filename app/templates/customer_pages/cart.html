@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 
 {% block main %}
-    <div class="heading"><h3>Your Cart!</h3></div>
-    <table class="table table-striped table-hover">
+<style>
+    body{
+        background:  #6E2375 ;
+    }
+</style>
+
+
+    <div class="heading text-white"><h3>Your Cart!</h3></div>
+    <table class="table table-striped table-hover table-borderless text-white ">
         <thead>
             <tr>
-                <th scope="col">Img</th>
+                <th scope="col"></th>
                 <th scope="col">Title</th>
                 <th scope="col">Price</th>
                 <th scope="col" >Quantity</th>
@@ -17,7 +24,19 @@
             {%for item in lineItems%}
 
             <tr>
-                <th scope="row">Item image</th>
+                <th scope="row">
+                    <img                         
+                    {#Check if there is and image associated with that product#}
+                    {%if productsImages[item.id]%}
+                    src="{{url_for('admin.get_image',imageName = productsImages[item.id])}}" 
+                    {%else%}
+                    src="#"
+                    {%endif%}
+                    alt="'{{productsImages[item.id]}}'"
+                    width="50em"
+                    height="50em"
+                    >
+                </th>
                 <td>{{itemNames[item.id]}}</td>
                 <td>{{locale.currency(itemPrices[item.id],grouping =
                     True)}}</td>

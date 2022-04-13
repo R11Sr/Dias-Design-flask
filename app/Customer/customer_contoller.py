@@ -33,6 +33,8 @@ def view_shopping_cart():
     """Render Shopping Cart."""
     itemNames ={}
     itemPrices ={}
+    productsImages = {}
+
 
     c_uid = current_user.get_id()
     lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == c_uid).all()
@@ -41,10 +43,11 @@ def view_shopping_cart():
         prod = Product.query.filter(Product.id == item.product_id).first()
         name = prod.title
         price = prod.price
+        productsImages[item.id] = prod.image
         itemNames[item.id] = name
         itemPrices[item.id] = price
 
-    return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices,locale = locale)
+    return render_template('customer_pages/cart.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices,productsImages = productsImages, locale = locale)
 
 @customer.route('/remove-from-cart',methods=['POST'])
 def remove_from_cart():
