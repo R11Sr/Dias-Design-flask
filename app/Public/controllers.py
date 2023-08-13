@@ -47,10 +47,12 @@ def about():
 def browse_products():
     """Allows a visitor to browse product catalog"""
 
+    #not needed
     def get_type(label):
         type = str(label).split('.')
         return type[1]
 
+    #not needed
     def get_color(label):
         color = str(label).split('.')
         return color[1] 
@@ -68,6 +70,7 @@ def create_account():
     
     form = RegistrationForm()
 
+    #processes the request to create the account
     if request.method == 'POST':
         if form.validate():
             firstName = form.firstName.data.capitalize().rstrip()
@@ -93,7 +96,7 @@ def create_account():
                 return redirect(next or url_for("public.home"))
             flash("Passwords do not match!",'danger')
         flash_errors(form)
-    
+    #loads the page to create account if the request is GET
     return render_template("create_account.html", form=form)
 
 
@@ -126,8 +129,8 @@ def login():
 def logout():
     """Logout of the application"""
 
-    logout_user()
-    session.clear()
+    logout_user() # from Flask-login
+    session.clear() 
     flash('You were logged out', 'success')
     return redirect(url_for('public.home'))
 
