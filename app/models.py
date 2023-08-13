@@ -43,6 +43,9 @@ class UserProfile(db.Model):
     def __repr__(self):
         return f"<User: {self.email}, id: {self.id} >"
 
+#Note These  below are not DB models but Enumerate, note parameter of the class definition
+#see https://docs.python.org/3/library/functions.html#enumerate
+
 class ProductTypes(enum.Enum):
     Accessories ='Accessories'
     Tops = 'Tops'
