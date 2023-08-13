@@ -26,7 +26,7 @@ from werkzeug.security import check_password_hash
 import locale
 locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' )
 
-customer = Blueprint('customer',__name__) # register the customer blueprint
+customer = Blueprint('customer',__name__) # load the customer blueprint
 
 @customer.route('/cart')
 def view_shopping_cart():
