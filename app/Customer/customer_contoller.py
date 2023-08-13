@@ -14,9 +14,9 @@ from app.config import Config
 from app.forms import LoginForm
 from app.models import Product, UserProfile,ShoppingCart,Order
 from sqlalchemy import select
-import  boto3
-import botocore
-import locale
+import  boto3 # python adapter for AWS S3 Service
+import botocore # python adapter for AWS S3 Service
+import locale # for currency formatting
 
 
 from app.forms import RegistrationForm
@@ -26,7 +26,7 @@ from werkzeug.security import check_password_hash
 import locale
 locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' )
 
-customer = Blueprint('customer',__name__)
+customer = Blueprint('customer',__name__) # register the customer blueprint
 
 @customer.route('/cart')
 def view_shopping_cart():
@@ -37,6 +37,7 @@ def view_shopping_cart():
 
 
     c_uid = current_user.get_id()
+    #load All line items for the customer
     lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == c_uid).all()
 
     for item in lineItems:
@@ -53,7 +54,7 @@ def view_shopping_cart():
 def remove_from_cart():
     """Removes the Item from the Cart refreshes it"""
 
-    item_id  = request.form['lineItem_id']
+    item_id  = request.form['lineItem_id'] # id of item to be removed 
     c_uid = current_user.get_id()
     item = ShoppingCart.query.filter(ShoppingCart.id == item_id).filter(ShoppingCart.customer_id == c_uid).first()
     db.session.delete(item)
@@ -61,7 +62,7 @@ def remove_from_cart():
 
     itemNames ={}
     itemPrices ={}
-    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == c_uid).all()
+    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == c_uid).all() # fetch the remaining items
     print(lineItems)
 
     for item in lineItems:
@@ -71,6 +72,7 @@ def remove_from_cart():
        itemNames[item.id] = name
        itemPrices[item.id] = price
 
+    #render the remaining items
     return render_template('customer_pages/line_items_only.html',lineItems = lineItems,itemNames = itemNames, itemPrices = itemPrices,locale = locale)
 
 @customer.route('/profile')
@@ -96,6 +98,7 @@ def profile():
 
         showInvoices[order.id] = 'disabled'
 
+        #if an invoice is available for the orders present
         if invoiceStatus(order.id):
             showInvoices[order.id] = 'enabled'
             invoiceNames[order.id] = invoiceName
@@ -114,7 +117,7 @@ def profile():
 
     return render_template('customer_pages/profile.html',orderInfo =orderInfo, orders = orders, locale = locale)
 
-
+"""Aux Function"""
 @customer.route('/invoice-status,<orderID>')
 def invoiceStatus(orderID):
     """returns a boolean to see if an invoice exists on the storage server"""
@@ -164,7 +167,7 @@ def place_order():
     """Places the order for that customer"""
     u_id = current_user.get_id()
     
-    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == u_id)
+    lineItems = ShoppingCart.query.filter(ShoppingCart.customer_id == u_id) # get all items in Cart
 
     for lineItem in lineItems:
         c_uid = current_user.get_id()
@@ -176,6 +179,7 @@ def place_order():
         db.session.add(order)
         db.session.commit()
 
+    # Empty Shopping Cart
     for lineItem in lineItems:
         db.session.delete(lineItem)
         db.session.commit()
@@ -224,7 +228,7 @@ def get_cart_amount():
     """function to return the amount of items in current user's cart"""
     ##################
     # Interesting section here. used the request object to get the actual 
-    # bytes passed and usd string manipulation to gety the user ID
+    # bytes passed and us the string manipulation to get the user ID
     ##################
     
     data = request.get_data()
