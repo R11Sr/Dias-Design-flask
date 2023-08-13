@@ -23,7 +23,7 @@ import locale
 import pdfkit # produces PDF from information stored on orders in the DB
 
 locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' ) 
-admin = Blueprint('admin',__name__)
+admin = Blueprint('admin',__name__) # load the admin blueprint
 
 """All Print statements are for debugging purposes"""
 
