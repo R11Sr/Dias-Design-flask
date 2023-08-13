@@ -17,15 +17,15 @@ from app.models import UserProfile, Order
 from app.forms import LoginForm
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
-import  boto3
-import botocore
+import  boto3 # python adapter for AWS S3 Service
+import botocore # python adapter for AWS S3 Service
 import locale
-import pdfkit
+import pdfkit # produces PDF from information stored on orders in the DB
 
 locale.setlocale( locale.LC_ALL, 'en_CA.UTF-8' ) 
 admin = Blueprint('admin',__name__)
 
-
+"""All Print statements are for debugging purposes"""
 
 @admin.route('/admin/manage_products')
 @login_required
@@ -65,6 +65,7 @@ def generate_invoice(orderID):
         'total': orderInfo.total
         }
 
+    #produces a PDF that is viewed in the browser
     rendered = render_template('admin_pages/invoice_template.html',order = order,locale = locale)
     pdf = pdfkit.from_string(rendered,False)
     response = make_response(pdf)
@@ -75,7 +76,7 @@ def generate_invoice(orderID):
 @admin.route('/get-invoice/<invoiceName>')
 @login_required
 def view_invoice(invoiceName):
-    """fetch the Invoice from the Storage Server."""
+    """fetch the Invoice from the S3 Storage Server."""
 
     try:
         BUCKET_NAME = Config.BUCKET_NAME
@@ -100,7 +101,8 @@ def view_invoice(invoiceName):
 @admin.route('/upload-invoice/<orderID>',methods=['GET','POST'])
 @login_required
 def upload_invoice(orderID):
-    """Used to upload the Invoice for a specific Order"""
+    """Used to upload the Invoice for a specific Order 
+    So that the customer can have it visable"""
     form = UploadInvoice()
 
     if request.method == 'POST':
@@ -141,6 +143,7 @@ def upload_invoice(orderID):
 @login_required
 def view_orders():
     """Renders a List of All orders"""
+
     itemNames={}
     itemPrices = {}
     productsImage = {}
@@ -156,15 +159,20 @@ def view_orders():
 
     return render_template('admin_pages/manage_orders.html',orders = orders, itemNames = itemNames, itemPrices = itemPrices, productsImage = productsImage, locale = locale)
 
+
+
 @admin.route('/manage-orders/<orderID>',methods=['GET','POST'])
 @login_required
 def order_details(orderID):
-    """Exposes the order details for a specific order and allows at the admin to manage it"""
+    """Exposes the order details for a specific order and allows 
+    an admin to manage it"""
     
     orderInfo = Order.query.filter(Order.id ==orderID).first()
     prodTitle = Product.query.filter(Product.id == orderInfo.product_id).first().title
     cust = UserProfile.query.filter(UserProfile.id == orderInfo.customer_id).first()
-    invoiceStatus = 'disabled'
+
+    invoiceStatus = 'disabled' # disables the invoice status until the checks are made to ensure one exists
+    
     invoiceName = f'Dias-Design-Inv-{orderInfo.id}.pdf'
     if invoiceAvailable(invoiceName):
         invoiceStatus = 'enabled'
@@ -181,14 +189,16 @@ def order_details(orderID):
         }
     
     form = UpdateOrder(status_options = orderInfo.status.value) # pre-selects the status for the drop down option
-    form.status_options.choices = [(option.value,option.name) for option in OrderStatus]
+    
+    # passes all the options of order status to the form
+    form.status_options.choices = [(option.value,option.name) for option in OrderStatus] 
 
     # Save updated status to the db
     if request.method  =='POST':
         if form.validate():
             status = form.status_options.data
             orderInfo.status = OrderStatus(str(status))
-            print(orderInfo)
+            print(orderInfo) 
             db.session.commit()
             
             flash('Order status updated!','success')
@@ -200,10 +210,11 @@ def order_details(orderID):
     
     return render_template('admin_pages/order_details.html',order = order,locale = locale, form = form )
 
+""""Aux Function"""
 @admin.route('/invoiceAvailable')
 @login_required
 def invoiceAvailable(invoiceName):
-    """returns a boolean to see if an invoice exists on the storage server"""
+    """returns a boolean to see if an invoice exists on the S3 storage server"""
     try:
         BUCKET_NAME = Config.BUCKET_NAME
         s3 = boto3.client(
@@ -223,15 +234,15 @@ def invoiceAvailable(invoiceName):
 @admin.route('/admin/add_product',methods=['GET','POST'])
 @login_required
 def add_product():
-    """Render the  page to add a product."""
+    """Render the  page to add a product. Only enabled if the user is an admin"""
 
     if not session.get('admin'):
         flash("You are not Authorised to access that functionality",'warning')
         return redirect(url_for('public.home'))
 
     form = ProductForm()
-    form.type_options.choices = [( option.value,option.name) for option in  ProductTypes]
-    form.color_options.choices = [(option.value,option.name) for option in  ProductColor]
+    form.type_options.choices = [( option.value,option.name) for option in  ProductTypes] #load the product types in the form
+    form.color_options.choices = [(option.value,option.name) for option in  ProductColor] #load the color types in the form
 
     if request.method == 'POST':
         if form.validate():
@@ -242,7 +253,8 @@ def add_product():
             type = form.type_options.data
             image = form.image.data
          
- 
+
+            #if no images are selected returns to the previous page
             if image.filename == '':
                 flash("No image has been selected",'warning')
                 return redirect(request.url)
@@ -278,10 +290,12 @@ def add_product():
             print(form.errors)
             flash(form.errors)
             return redirect(request.url)
-
+        
+    #if request method is GET, load the form
     return render_template('add_product.html', form = form)
 
 
+"""Aux Function"""
 
 @admin.route('/image-server/<imageName>')
 def get_image(imageName):
@@ -346,7 +360,7 @@ def edit_product(old_product_id):
             flash("Product Updated!",'success')
             return redirect(url_for('admin.admin_products'))           
             
-    # If the request is tp get the product to edit
+    # If the request is GET show the product to edit
     return render_template('edit_product.html',prod = editing_object, form = form)
 
 
